@@ -46,3 +46,4 @@ function drawLines() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+

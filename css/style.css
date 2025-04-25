@@ -119,10 +119,6 @@ button:hover,
   color: #FCFCEC;
 }
 
-.circle-button:hover::before {
-  background-color: #EF5C26;
-}
-
 /* -------------------- HEADER -------------------- */
 header {
   position: fixed;
