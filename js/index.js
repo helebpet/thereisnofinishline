@@ -22,8 +22,8 @@ function setup() {
 
 function draw() {
   // Define the two colors (FCFCEC and D7DA1B)
-  let color1 = color('#FCFCEC'); // light cream (sunset sky color)
-  let color2 = color('#D7DA1B'); // yellow-green (sunset glow)
+  let color1 = color('#FCFCEC'); // light cream 
+  let color2 = color('#D7DA1B'); // yellow-green 
 
   // Use mouseY to control the interpolation between the two colors
   let lerpedColor = lerpColor(color1, color2, map(mouseY, 0, height, 0, 1)); // map Y to transition
@@ -43,8 +43,6 @@ function draw() {
   // Position the custom cursor
   cursorDiv.position(mouseX, mouseY);
 }
-
-
 
 function drawLines() {
   stroke('#000000');
