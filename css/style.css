@@ -246,38 +246,4 @@ header {
   }
 }
 
-@media (max-width: 600px) {
-  .centered-wrapper {
-    gap: 1rem;
-  }
 
-  .enter-button {
-    padding: 0.6em 1.5em;
-  }
-
-  .quote {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    bottom: auto;
-    right: auto;
-    transform: translate(-50%, -50%);
-    font-size: 44px;
-    max-width: 90%;
-    text-align: center;
-  }
-
-  button,
-  .circle-button,
-  .arrow-button {
-    width: 80px;
-    height: 40px;
-    font-size: 13px;
-  }
-
-  .circle-button::before {
-    width: 14px;
-    height: 14px;
-    right: 10px;
-  }
-}
