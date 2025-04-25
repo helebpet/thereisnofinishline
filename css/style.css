@@ -1,0 +1,104 @@
+@import url("https://use.typekit.net/kdi7uwg.css");
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #FCFCEC;
+  font-family: "termina", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  cursor: none;
+}
+
+canvas {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.centered-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 1;
+  padding: 1rem;
+  width: 90%;
+  max-width: 900px;
+}
+
+.centered-wrapper p.main-text {
+  margin: 0;
+  font-weight: 900;
+  color: #04AD74;
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: 1.2;
+}
+
+.subtext {
+  color: #EF5C26;
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+  font-weight: 600;
+  max-width: 90%;
+}
+
+.enter-button {
+  background-color: #EFBD06;
+  border: 1px solid black;
+  border-radius: 30px;
+  color: #EF5C26;
+  font-weight: 700;
+  padding: 0.6em 2em;
+  text-decoration: none;
+  display: inline-block;
+  font-size: clamp(1rem, 1.5vw, 1.5rem);
+  transition: transform 0.2s, background-color 0.2s;
+  cursor: none;
+}
+
+.enter-button:hover {
+  transform: scale(1.05);
+  background-color: #000;
+  color: #FCFCEC;
+}
+
+.custom-cursor {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #000;
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inner-dot {
+  width: 8px;
+  height: 8px;
+  background-color: transparent;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+@media (max-width: 600px) {
+  .centered-wrapper {
+    gap: 1rem;
+  }
+
+  .enter-button {
+    padding: 0.6em 1.5em;
+  }
+}
