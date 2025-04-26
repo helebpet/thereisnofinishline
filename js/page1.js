@@ -1,14 +1,12 @@
 let bgImage;
 let cursorDiv;
 let canvasReady = false;
-
 let currentLine = 0;
 let lineProgress = 0;
-
 // Variables for the bouncing time
 let timeX, timeY;
-let timeSpeedX = 3;
-let timeSpeedY = 2;
+let timeSpeedX = 2;
+let timeSpeedY = 1.5;
 let timeText = "";
 
 function preload() {
@@ -27,23 +25,22 @@ function setup() {
   cnv.style('display', 'none'); // hide canvas initially
   frameRate(60);
   noCursor();
-
   cursorDiv = select('.custom-cursor');
-
+  
   // Initialize time position
-  timeX = random(width);
-  timeY = random(height);
+  timeX = width / 4;
+  timeY = height / 4;
 }
 
 function draw() {
   if (!canvasReady) return;
-
+  
   let cnv = select('canvas');
   if (cnv && cnv.style('display') === 'none') {
     cnv.style('display', 'block'); // show canvas once image is ready
   }
-
-  // Draw background
+  
+  // Draw background - REMOVED SHIFT
   let aspectRatio = bgImage.width / bgImage.height;
   let canvasRatio = width / height;
   let drawWidth, drawHeight;
@@ -56,63 +53,80 @@ function draw() {
     drawWidth = height * aspectRatio;
   }
   
-  // Bigger shift to the right on mobile
-  let shiftRight = windowWidth <= 600 ? 25 : 0; // increase for more push
-  let offsetX = (width - drawWidth) / 2 + shiftRight;
+  // No shift for background - centered
+  let offsetX = (width - drawWidth) / 2;
   let offsetY = (height - drawHeight) / 2;
-
+  
   image(bgImage, offsetX, offsetY, drawWidth, drawHeight);
-
+  
   // Draw animated black lines
   stroke(0);
   strokeWeight(1);
-
   for (let y = 0; y < currentLine * 10; y += 10) {
     line(0, y, width, y);
   }
-
+  
   let y = currentLine * 10;
   if (y < height) {
     line(0, y, lineProgress, y);
     lineProgress += 10;
-
     if (lineProgress >= width) {
       currentLine++;
       lineProgress = 0;
     }
   }
-
+  
   // Move custom cursor
   if (cursorDiv) {
     cursorDiv.position(mouseX, mouseY);
   }
-
-  // Update time and position with 12-hour format and AM/PM
+  
+  // Update time text with 12-hour format and AM/PM
   let currentHour = hour();
   let ampm = currentHour >= 12 ? 'PM' : 'AM';
-  currentHour = currentHour > 12 ? currentHour - 12 : currentHour; // Convert to 12-hour format
-  if (currentHour === 0) currentHour = 12; // Midnight is 12, not 0
-
+  currentHour = currentHour > 12 ? currentHour - 12 : currentHour;
+  if (currentHour === 0) currentHour = 12;
   timeText = nf(currentHour, 2) + ":" + nf(minute(), 2) + ":" + nf(second(), 2) + " " + ampm;
-
+  
   // Move the time display
   timeX += timeSpeedX;
   timeY += timeSpeedY;
-
+  
+  // Simple boundary checking
+  let padding = 20;
+  let textW = textWidth(timeText);
+  
   // Bounce off edges
-  if (timeX <= 0 || timeX >= width - textWidth(timeText)) {
+  if (timeX < padding || timeX > width - textW - padding) {
     timeSpeedX *= -1;
+    // Keep within bounds
+    if (timeX < padding) timeX = padding;
+    if (timeX > width - textW - padding) timeX = width - textW - padding;
   }
-  if (timeY <= 0 || timeY >= height - 20) {
+  
+  if (timeY < padding || timeY > height - 32 - padding) {
     timeSpeedY *= -1;
+    // Keep within bounds
+    if (timeY < padding) timeY = padding;
+    if (timeY > height - 32 - padding) timeY = height - 32 - padding;
   }
-
+  
   // Display the time
-  fill(255); // white text
+  // Shadow for better contrast
+  fill(0, 150);
+  textSize(32);
+  text(timeText, timeX + 2, timeY + 2);
+  
+  // Main time text
+  fill(255);
   textSize(32);
   text(timeText, timeX, timeY);
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  
+  // Reset time position on resize
+  timeX = width / 4;
+  timeY = height / 4;
 }
