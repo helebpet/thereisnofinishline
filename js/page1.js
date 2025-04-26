@@ -1,4 +1,4 @@
-let bgImage;
+let bgImage, bgImageMobile;
 let cursorDiv;
 let canvasReady = false;
 let currentLine = 0;
@@ -8,16 +8,29 @@ let timeX, timeY;
 let timeSpeedX = 2;
 let timeSpeedY = 1.5;
 let timeText = "";
+let isMobile = false;
 
 function preload() {
-  bgImage = loadImage('img/page1.jpg',
-    () => {
-      console.log("Image loaded successfully.");
-      canvasReady = true;
-      select('#loader').hide(); // hide loading screen
-    },
-    (err) => console.error("Image failed to load:", err)
-  );
+  // Load both images
+  bgImage = loadImage('img/page1.jpg', imageLoaded, loadError);
+  bgImageMobile = loadImage('img/page1mobile.jpg', imageLoaded, loadError);
+}
+
+// Counter for loaded images
+let imagesLoaded = 0;
+
+function imageLoaded() {
+  imagesLoaded++;
+  // When both images are loaded, we're ready
+  if (imagesLoaded >= 2) {
+    console.log("All images loaded successfully.");
+    canvasReady = true;
+    select('#loader').hide(); // hide loading screen
+  }
+}
+
+function loadError(err) {
+  console.error("Image failed to load:", err);
 }
 
 function setup() {
@@ -27,9 +40,17 @@ function setup() {
   noCursor();
   cursorDiv = select('.custom-cursor');
   
+  // Check if device is mobile
+  checkDevice();
+  
   // Initialize time position
   timeX = width / 4;
   timeY = height / 4;
+}
+
+function checkDevice() {
+  // Simple check for mobile - you might want to use a more robust method
+  isMobile = windowWidth <= 768; // Common breakpoint for mobile devices
 }
 
 function draw() {
@@ -40,8 +61,11 @@ function draw() {
     cnv.style('display', 'block'); // show canvas once image is ready
   }
   
-  // Draw background - REMOVED SHIFT
-  let aspectRatio = bgImage.width / bgImage.height;
+  // Choose the appropriate background image based on device
+  let currentBg = isMobile ? bgImageMobile : bgImage;
+  
+  // Draw background
+  let aspectRatio = currentBg.width / currentBg.height;
   let canvasRatio = width / height;
   let drawWidth, drawHeight;
   
@@ -57,7 +81,7 @@ function draw() {
   let offsetX = (width - drawWidth) / 2;
   let offsetY = (height - drawHeight) / 2;
   
-  image(bgImage, offsetX, offsetY, drawWidth, drawHeight);
+  image(currentBg, offsetX, offsetY, drawWidth, drawHeight);
   
   // Draw animated black lines
   stroke(0);
@@ -125,6 +149,9 @@ function draw() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  
+  // Check device type again on resize
+  checkDevice();
   
   // Reset time position on resize
   timeX = width / 4;
