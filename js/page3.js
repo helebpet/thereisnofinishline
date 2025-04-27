@@ -23,6 +23,11 @@ const quoteText = [
 
 let imagesLoaded = 0;
 
+// --- New Variables for dynamic movement ---
+let euphoriaTargetOffsetX = 0;
+let euphoriaOffsetX = 0;
+let revealOffsets = [];
+
 function preload() {
   bgImage = loadImage('img/page3.jpg', imageLoaded, loadError);
 }
@@ -53,13 +58,16 @@ function setup() {
   quoteX = width / 2;
   quoteY = height / 2;
 
-  sunX = width / 2; // Center the sun horizontally
-  sunY = height / 2; // Center the sun vertically
+  sunX = width / 2;
+  sunY = height / 2;
 
   sunTargetY = sunY;
 
-  // Set sunRadius proportional to screen size (larger than before)
   updateSunSize();
+
+  for (let i = 1; i < quoteText.length; i++) {
+    revealOffsets[i] = width;
+  }
 }
 
 function draw() {
@@ -71,7 +79,7 @@ function draw() {
   }
 
   drawBackground();
-  drawGradientLines(); // Change to the gradient line drawing
+  drawGradientLines();
   updateSun();
   drawSun();
   drawText();
@@ -98,17 +106,15 @@ function drawBackground() {
 }
 
 function drawGradientLines() {
-  // Calculate gradient color based on mouseX position
-  let startColor = color('#EF5C26');  // Orange color
-  let endColor = color('#D7DA1B');    // Yellow color
-  let interColor = lerpColor(startColor, endColor, map(mouseX, 0, width, 0, 1));  // Interpolate between the two colors
+  let startColor = color('#EF5C26');
+  let endColor = color('#D7DA1B');
+  let interColor = lerpColor(startColor, endColor, map(mouseX, 0, width, 0, 1));
 
   stroke(interColor);
   strokeWeight(1);
 
-  // Draw static lines across the screen
   for (let y = 0; y < height; y += 10) {
-    line(0, y, width, y);  // Static horizontal lines
+    line(0, y, width, y);
   }
 }
 
@@ -128,13 +134,12 @@ function drawSun() {
   ellipse(sunX, sunY, sunRadius, sunRadius);
 }
 
+// --- NEW live dynamic drawText() ---
 function drawText() {
   targetX = mouseX;
 
-  // Check if the device is mobile (screen width <= 768px)
   if (windowWidth <= 768) {
-    // Move the text up slightly on mobile devices
-    targetY = height / 1.9;  // Adjust the Y position as needed
+    targetY = height / 1.9;
   } else {
     targetY = height / 1.6;
   }
@@ -146,12 +151,32 @@ function drawText() {
   fill('#FCFCEC');
   textAlign(CENTER, CENTER);
   textFont('Termina');
-  textSize(windowWidth / 26);  // Further decreased the size to make the text smaller
+  textSize(windowWidth / 26);
   textStyle(BOLD);
 
-  let lineHeight = windowWidth / 14;
-  for (let i = 0; i < quoteText.length; i++) {
-    text(quoteText[i], quoteX, quoteY + (i - quoteText.length / 2) * lineHeight);
+  let lineHeight = windowWidth / 24;
+
+  // --- Dynamic behavior ---
+  if (mouseX > width * 0.6) {
+    euphoriaTargetOffsetX = -width / 4; // Move left
+  } else {
+    euphoriaTargetOffsetX = 0; // Centered
+  }
+
+  euphoriaOffsetX += (euphoriaTargetOffsetX - euphoriaOffsetX) * 0.05; // Smooth easing
+
+  text(quoteText[0], quoteX + euphoriaOffsetX, quoteY - lineHeight);
+
+  for (let i = 1; i < quoteText.length; i++) {
+    let desiredOffset;
+    if (mouseX > width * 0.6) {
+      desiredOffset = 0; // Bring lines to center
+    } else {
+      desiredOffset = width; // Push them off-screen right
+    }
+
+    revealOffsets[i] += (desiredOffset - revealOffsets[i]) * 0.05; // Smooth transition
+    text(quoteText[i], quoteX - width / 2 + revealOffsets[i], quoteY + (i - 1) * lineHeight);
   }
 }
 
@@ -166,15 +191,12 @@ function windowResized() {
   timeX = width / 4;
   timeY = height / 4;
 
-  // Recenter the sun on window resize
   sunX = width / 2;
   sunY = height / 2;
 
-  // Update sun size proportional to new screen size
   updateSunSize();
 }
 
 function updateSunSize() {
-  // Set the sun's radius to be 50% of the screen width
-  sunRadius = width * 0.5; // Sun will take up half of the screen's width
+  sunRadius = width * 0.5;
 }
