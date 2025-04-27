@@ -130,13 +130,13 @@ function drawSun() {
 
 function drawText() {
   targetX = mouseX;
-  targetY = height / 1.5;
+  targetY = height / 1.6;
 
   quoteX += (targetX - quoteX) * easing;
   quoteY += (targetY - quoteY) * easing;
 
   noStroke();
-  fill(255);
+  fill('#FCFCEC');
   textAlign(CENTER, CENTER);
   textFont('Termina');
   textSize(windowWidth / 26);  // Further decreased the size to make the text smaller
