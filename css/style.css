@@ -202,7 +202,7 @@ body.page2 {
 
 /* Wrapper that contains header + main for page2 */
 .page2-wrapper {
-  padding: 110px 4% 20px 4%; /* Mírně menší padding pro lepší responsivitu */
+  padding: 120px 4% 20px 4%; /* Mírně menší padding pro lepší responsivitu */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -222,7 +222,7 @@ body.page2 {
 body.page2 .text-block p {
   color: #04AD74;
   font-weight: 600;
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
   line-height: 1.6;
   letter-spacing: -0.11em; /* Zmenšení rozestupu mezi znaky o 11 % */
   text-align: left;
@@ -306,4 +306,9 @@ body.page3 .circle-button::before {
   .main-quote {
     font-size: clamp(1.8rem, 4vw, 3rem);
   }
+
+  .text-block p {
+    font-size: clamp(0.8rem, 2vw, 1.2rem);
+  }
+  
 }
