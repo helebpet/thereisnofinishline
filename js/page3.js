@@ -130,7 +130,14 @@ function drawSun() {
 
 function drawText() {
   targetX = mouseX;
-  targetY = height / 1.6;
+
+  // Check if the device is mobile (screen width <= 768px)
+  if (windowWidth <= 768) {
+    // Move the text up slightly on mobile devices
+    targetY = height / 1.9;  // Adjust the Y position as needed
+  } else {
+    targetY = height / 1.6;
+  }
 
   quoteX += (targetX - quoteX) * easing;
   quoteY += (targetY - quoteY) * easing;
