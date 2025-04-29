@@ -64,7 +64,7 @@ function draw() {
   // Choose the appropriate background image based on device
   let currentBg = isMobile ? bgImageMobile : bgImage;
   
-  // Draw background
+  // Draw background first
   let aspectRatio = currentBg.width / currentBg.height;
   let canvasRatio = width / height;
   let drawWidth, drawHeight;
@@ -145,6 +145,32 @@ function draw() {
   fill(255);
   textSize(32);
   text(timeText, timeX, timeY);
+
+  // === Add the "There is no finish line" text here ===
+  // Color change based on mouse position
+  let red = map(mouseX, 0, width, 0, 255);
+  let green = map(mouseY, 0, height, 0, 255);
+  let blue = map(mouseX + mouseY, 0, width + height, 0, 255);
+
+  // Main Title Text
+  textFont('Termina');  // Use 'Termina' font
+  textSize(windowWidth / 30);  // Dynamically set text size based on window width
+  textStyle(BOLD);  // Apply bold style
+  fill(red, green, blue); // Color based on mouse position
+  textAlign(CENTER, CENTER);
+  text('THERE IS NO FINISH LINE.', width / 2, height / 4);
+
+  // Body Text
+  textSize(windowWidth / 40);  // Adjust size for body text
+  fill(red, green, blue); // Color based on mouse position
+  textAlign(CENTER, CENTER);
+  text(`
+    THIS SLOGAN, INTRODUCED IN 1977, was one of NIKE'S EARLIEST and most INFLUENTIAL advertising campaigns.\n
+    It symbolized the idea of CONTINUOUS SELF-IMPROVEMENT, emphasizing that the journey of personal growth and excellence NEVER TRULY ENDS.\n\n
+    The campaign featured imagery of a LONE RUNNER on an EMPTY ROAD, portraying running as both a PHYSICAL and EMOTIONAL experience.\n\n
+    It transcended sports, resonating with broader themes of PERSEVERANCE in life and business.\n\n
+    The message: SUCCESS is not about DEFEATING OTHERS but about CONSTANTLY CHALLENGING ONESELF.
+  `, width / 2, height / 2);
 }
 
 function windowResized() {

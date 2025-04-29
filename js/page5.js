@@ -8,25 +8,28 @@ let quoteX, quoteY;
 let targetX, targetY;
 let easing = 0.05;
 
-let sunX, sunY;
-let sunTargetY;
-let sunRadius;
-let sunColor = '#EF5C26';
-
 const quoteText = [
-"The EXPERIENCE is UNIQUE",
-  "to each of us,",
-  "but when it HAPPENS you",
-  "BREAK THROUGH a",
-  "BARRIER that SEPARATES",
-  "you from CASUAL RUNNERS.",
-  "FOREVER."
+  "The  EXPERIENCE  is  UNIQUE",
+  "to  each  of  us,",
+  "but  when  it  HAPPENS",
+  "you  BREAK  THROUGH  a  BARRIER",
+  "that  SEPARATES  you",
+  "from  CASUAL  RUNNERS."
 ];
 
 let imagesLoaded = 0;
 
+// Typewriter animation variables
+let typewriterText = "FOREVER.";
+let typedLength = 0;
+let lastTypeTime = 0;
+let typeSpeed = 200; // milliseconds between each character
+let typewriterStarted = false;
+let typewriterDelay = 4000; // 4 seconds
+let typewriterStartTime;
+
 function preload() {
-  bgImage = loadImage('img/page3.jpg', imageLoaded, loadError);
+  bgImage = loadImage('img/page5.jpg', imageLoaded, loadError);
 }
 
 function imageLoaded() {
@@ -35,6 +38,7 @@ function imageLoaded() {
     console.log("Image loaded successfully.");
     canvasReady = true;
     select('#loader').hide();
+    typewriterStartTime = millis() + typewriterDelay;
   }
 }
 
@@ -54,14 +58,6 @@ function setup() {
 
   quoteX = width / 2;
   quoteY = height / 2;
-
-  sunX = width / 2; // Center the sun horizontally
-  sunY = height / 2; // Center the sun vertically
-
-  sunTargetY = sunY;
-
-  // Set sunRadius proportional to screen size (larger than before)
-  updateSunSize();
 }
 
 function draw() {
@@ -73,9 +69,7 @@ function draw() {
   }
 
   drawBackground();
-  drawGradientLines(); // Change to the gradient line drawing
-  updateSun();
-  drawSun();
+  drawGradientLines();
   drawText();
   updateCursor();
 }
@@ -100,45 +94,23 @@ function drawBackground() {
 }
 
 function drawGradientLines() {
-  // Calculate gradient color based on mouseX position
-  let startColor = color('#EF5C26');  // Orange color
-  let endColor = color('#D7DA1B');    // Yellow color
-  let interColor = lerpColor(startColor, endColor, map(mouseX, 0, width, 0, 1));  // Interpolate between the two colors
-
-  stroke(interColor);
+  // Set the line color to black
+  stroke(0); // Black color
   strokeWeight(1);
 
-  // Draw static lines across the screen
   for (let y = 0; y < height; y += 10) {
-    line(0, y, width, y);  // Static horizontal lines
+    line(0, y, width, y);
   }
-}
-
-function updateSun() {
-  if (mouseX > width * 0.7) {
-    sunTargetY = -sunRadius;
-  } else {
-    sunTargetY = height + sunRadius;
-  }
-  sunY += (sunTargetY - sunY) * easing;
-}
-
-function drawSun() {
-  stroke(0);
-  strokeWeight(1);
-  fill(sunColor);
-  ellipse(sunX, sunY, sunRadius, sunRadius);
 }
 
 function drawText() {
   targetX = mouseX;
 
-  // Check if the device is mobile (screen width <= 768px)
+  // Adjusted Y positioning to move the text a bit lower
   if (windowWidth <= 768) {
-    // Move the text up slightly on mobile devices
-    targetY = height / 1.9;  // Adjust the Y position as needed
+    targetY = height / 2; // Move it to the middle of the screen on smaller screens
   } else {
-    targetY = height / 1.6;
+    targetY = height / 1.8; // Slightly lower on larger screens
   }
 
   quoteX += (targetX - quoteX) * easing;
@@ -148,12 +120,59 @@ function drawText() {
   fill('#FCFCEC');
   textAlign(LEFT, CENTER);
   textFont('Termina');
-  textSize(windowWidth / 30);  // Further decreased the size to make the text smaller
+  textSize(windowWidth / 30);
   textStyle(BOLD);
 
+  let fontSize = windowWidth / 30;
   let lineHeight = windowWidth / 20;
+  let letterSpacing = -0.11 * fontSize;
+
   for (let i = 0; i < quoteText.length; i++) {
-    text(quoteText[i], quoteX, quoteY + (i - quoteText.length / 2) * lineHeight);
+    let line = quoteText[i];
+    let direction = i % 2 === 0 ? 1 : -1;
+    let offsetX = direction * sin(frameCount * 0.02 + i) * 20;
+
+    let x = quoteX + offsetX;
+    let y = quoteY + (i - quoteText.length / 2) * lineHeight;
+
+    let charX = x;
+    for (let c = 0; c < line.length; c++) {
+      text(line[c], charX, y);
+      charX += textWidth(line[c]) + letterSpacing;
+    }
+  }
+
+  // Start typewriter effect after delay
+  if (millis() > typewriterStartTime) {
+    drawTypewriterEffect(quoteY + (quoteText.length / 2) * lineHeight, fontSize, letterSpacing);
+  }
+}
+
+function drawTypewriterEffect(yPosition, fontSize, letterSpacing) {
+  if (!typewriterStarted) {
+    typewriterStarted = true;
+    lastTypeTime = millis();
+  }
+
+  let currentTime = millis();
+  if (currentTime - lastTypeTime > typeSpeed && typedLength < typewriterText.length) {
+    typedLength++;
+    lastTypeTime = currentTime;
+  }
+
+  let displayText = typewriterText.substring(0, typedLength);
+
+  fill('#FCFCEC');
+  noStroke();
+  textAlign(LEFT, CENTER);
+  textFont('Termina');
+  textSize(fontSize);
+  textStyle(BOLD);
+
+  let charX = quoteX;
+  for (let c = 0; c < displayText.length; c++) {
+    text(displayText[c], charX, yPosition);
+    charX += textWidth(displayText[c]) + letterSpacing;
   }
 }
 
@@ -167,16 +186,4 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   timeX = width / 4;
   timeY = height / 4;
-
-  // Recenter the sun on window resize
-  sunX = width / 2;
-  sunY = height / 2;
-
-  // Update sun size proportional to new screen size
-  updateSunSize();
-}
-
-function updateSunSize() {
-  // Set the sun's radius to be 50% of the screen width
-  sunRadius = width * 0.5; // Sun will take up half of the screen's width
 }
