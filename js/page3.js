@@ -119,10 +119,13 @@ function drawGradientLines() {
 }
 
 function updateSun() {
-  if (mouseX > width * 0.7) {
+  let centerThreshold = width * 0.3;
+  if (mouseX > width / 2 + centerThreshold) {
     sunTargetY = -sunRadius;
-  } else {
+  } else if (mouseX < width / 2 - centerThreshold) {
     sunTargetY = height + sunRadius;
+  } else {
+    sunTargetY = height / 2;
   }
   sunY += (sunTargetY - sunY) * easing;
 }
@@ -134,14 +137,14 @@ function drawSun() {
   ellipse(sunX, sunY, sunRadius, sunRadius);
 }
 
-// --- NEW live dynamic drawText() ---
+// --- UPDATED drawText() with text moved up ---
 function drawText() {
   targetX = mouseX;
 
   if (windowWidth <= 768) {
-    targetY = height / 1.9;
+    targetY = height / 2.3;
   } else {
-    targetY = height / 1.6;
+    targetY = height / 2.1; // mírně výš
   }
 
   quoteX += (targetX - quoteX) * easing;
@@ -151,34 +154,35 @@ function drawText() {
   fill('#FCFCEC');
   textAlign(CENTER, CENTER);
   textFont('Termina');
-  textSize(windowWidth / 26);
+
+  let fontSize = windowWidth / 45; // menší text
+  textSize(fontSize);
   textStyle(BOLD);
 
-  let lineHeight = windowWidth / 24;
+  let lineHeight = fontSize * 1.15; // menší mezera mezi řádky
 
-  // --- Dynamic behavior ---
-  if (mouseX > width * 0.6) {
-    euphoriaTargetOffsetX = -width / 4; // Move left
+  let centerThreshold = width * 0.3;
+  if (mouseX > width / 2 + centerThreshold) {
+    euphoriaTargetOffsetX = -width / 4;
+  } else if (mouseX < width / 2 - centerThreshold) {
+    euphoriaTargetOffsetX = width / 4;
   } else {
-    euphoriaTargetOffsetX = 0; // Centered
+    euphoriaTargetOffsetX = 0;
   }
 
-  euphoriaOffsetX += (euphoriaTargetOffsetX - euphoriaOffsetX) * 0.05; // Smooth easing
+  euphoriaOffsetX += (euphoriaTargetOffsetX - euphoriaOffsetX) * 0.05;
 
   text(quoteText[0], quoteX + euphoriaOffsetX, quoteY - lineHeight);
 
   for (let i = 1; i < quoteText.length; i++) {
-    let desiredOffset;
-    if (mouseX > width * 0.6) {
-      desiredOffset = 0; // Bring lines to center
-    } else {
-      desiredOffset = width; // Push them off-screen right
-    }
-
-    revealOffsets[i] += (desiredOffset - revealOffsets[i]) * 0.05; // Smooth transition
+    let revealTarget = (mouseX < width / 2 - centerThreshold) ? width :
+                       (mouseX > width / 2 + centerThreshold) ? 0 : width / 2;
+    revealOffsets[i] += (revealTarget - revealOffsets[i]) * 0.05;
     text(quoteText[i], quoteX - width / 2 + revealOffsets[i], quoteY + (i - 1) * lineHeight);
   }
 }
+
+
 
 function updateCursor() {
   if (cursorDiv) {

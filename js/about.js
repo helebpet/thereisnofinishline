@@ -179,7 +179,6 @@ function drawText() {
 }
 
 
-
 function updateCursor() {
   if (cursorDiv) {
     cursorDiv.position(mouseX, mouseY);
@@ -189,3 +188,4 @@ function updateCursor() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
