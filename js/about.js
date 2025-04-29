@@ -1,31 +1,46 @@
-let bgImage, bgImageMobile;
+let bgImage;
 let cursorDiv;
 let canvasReady = false;
-let currentLine = 0;
-let lineProgress = 0;
-// Variables for the bouncing time
-let timeX, timeY;
-let timeSpeedX = 2;
-let timeSpeedY = 1.5;
-let timeText = "";
-let isMobile = false;
+let quoteX, quoteY;
+let targetX, targetY;
+let easing = 0.05;
+
+let imagesLoaded = 0;
+
+let currentLineIndex = 0;
+let currentCharIndex = 0;
+let lastTypeTime = 0;
+let typeSpeed = 40; // milliseconds per character
+let typewriterDone = false;
+
+const quoteText = [
+  "THERE IS\nNO FINISH LINE.",
+  "THIS SLOGAN, INTRODUCED IN 1977,",
+  "was one of NIKE'S EARLIEST and most INFLUENTIAL advertising campaigns.",
+  "It symbolized the idea of CONTINUOUS SELF-IMPROVEMENT,",
+  "emphasizing that the journey of personal growth and excellence",
+  "NEVER TRULY ENDS.",
+  "The campaign featured imagery of a LONE RUNNER on an EMPTY ROAD,",
+  "portraying running as both a PHYSICAL and EMOTIONAL experience.",
+  "It transcended sports,",
+  "resonating with broader themes of PERSEVERANCE in life and business.",
+  "The message:",
+  "SUCCESS is not about DEFEATING OTHERS,",
+  "but about CONSTANTLY CHALLENGING ONESELF.",
+  "This idea became a cornerstone of NIKE'S philosophy.",
+  "It reminds us that the path to greatness is endless,",
+  "and the true victory lies in the journey itself."
+];
 
 function preload() {
-  // Load both images
-  bgImage = loadImage('img/page1.jpg', imageLoaded, loadError);
-  bgImageMobile = loadImage('img/page1mobile.jpg', imageLoaded, loadError);
+  bgImage = loadImage('img/page5.jpg', imageLoaded, loadError);
 }
-
-// Counter for loaded images
-let imagesLoaded = 0;
 
 function imageLoaded() {
   imagesLoaded++;
-  // When both images are loaded, we're ready
-  if (imagesLoaded >= 2) {
-    console.log("All images loaded successfully.");
+  if (imagesLoaded >= 1) {
     canvasReady = true;
-    select('#loader').hide(); // hide loading screen
+    select('#loader')?.hide();
   }
 }
 
@@ -35,40 +50,34 @@ function loadError(err) {
 
 function setup() {
   let cnv = createCanvas(windowWidth, windowHeight);
-  cnv.style('display', 'none'); // hide canvas initially
+  cnv.style('display', 'none');
   frameRate(60);
   noCursor();
   cursorDiv = select('.custom-cursor');
-  
-  // Check if device is mobile
-  checkDevice();
-  
-  // Initialize time position
-  timeX = width / 4;
-  timeY = height / 4;
-}
 
-function checkDevice() {
-  // Simple check for mobile - you might want to use a more robust method
-  isMobile = windowWidth <= 768; // Common breakpoint for mobile devices
+  quoteX = width / 2;
+  quoteY = height / 2; // Centered vertically
 }
 
 function draw() {
   if (!canvasReady) return;
-  
+
   let cnv = select('canvas');
   if (cnv && cnv.style('display') === 'none') {
-    cnv.style('display', 'block'); // show canvas once image is ready
+    cnv.style('display', 'block');
   }
-  
-  // Choose the appropriate background image based on device
-  let currentBg = isMobile ? bgImageMobile : bgImage;
-  
-  // Draw background first
-  let aspectRatio = currentBg.width / currentBg.height;
+
+  drawBackground();
+  drawGradientLines();
+  drawText();
+  updateCursor();
+}
+
+function drawBackground() {
+  let aspectRatio = bgImage.width / bgImage.height;
   let canvasRatio = width / height;
   let drawWidth, drawHeight;
-  
+
   if (canvasRatio > aspectRatio) {
     drawWidth = width;
     drawHeight = width / aspectRatio;
@@ -76,110 +85,107 @@ function draw() {
     drawHeight = height;
     drawWidth = height * aspectRatio;
   }
-  
-  // No shift for background - centered
+
   let offsetX = (width - drawWidth) / 2;
   let offsetY = (height - drawHeight) / 2;
-  
-  image(currentBg, offsetX, offsetY, drawWidth, drawHeight);
-  
-  // Draw animated black lines
+
+  image(bgImage, offsetX, offsetY, drawWidth, drawHeight);
+}
+
+function drawGradientLines() {
   stroke(0);
   strokeWeight(1);
-  for (let y = 0; y < currentLine * 10; y += 10) {
+  for (let y = 0; y < height; y += 10) {
     line(0, y, width, y);
   }
+}
+
+function drawText() {
+  targetX = mouseX;
+  targetY = quoteY;
+
+  quoteX += (targetX - quoteX) * easing;
+  quoteY += (targetY - quoteY) * easing;
+
+  noStroke();
+  fill('#FCFCEC');
+  textAlign(LEFT, CENTER); // Center text horizontally
+  textFont('Termina');
+
+  let baseFontSize = min(windowWidth / 45, 22);
+  let titleFontSize = baseFontSize * 3; // Bigger title
+  let paragraphFontSize = baseFontSize * 0.8; // Smaller paragraph text
   
-  let y = currentLine * 10;
-  if (y < height) {
-    line(0, y, lineProgress, y);
-    lineProgress += 10;
-    if (lineProgress >= width) {
-      currentLine++;
-      lineProgress = 0;
+  let titleSpacing = 120; // Bigger space between title and paragraph
+  let paragraphLineHeight = paragraphFontSize * 1.4; // Reduced line spacing for paragraphs
+
+  let yOffsetDown = 40; // <<< Move everything DOWN by 40px
+
+  let yStart = quoteY - ((quoteText.length - 1) * paragraphLineHeight) / 2 + yOffsetDown;
+
+  for (let i = 0; i < quoteText.length; i++) {
+    if (i > currentLineIndex) continue;
+
+    let line = quoteText[i];
+    let x = quoteX;
+    let y;
+
+    if (i === 0) {
+      textSize(titleFontSize);
+      textStyle('bold'); // Ensure bold for title
+      y = yStart; // Title position
+
+      // No rectangle behind the title
+      fill('#FCFCEC');
+      text(line, x, y);
+
+    } else {
+      textSize(paragraphFontSize);
+      textStyle(NORMAL); // Paragraph normal boldness
+      y = yStart + titleSpacing + (i - 1) * paragraphLineHeight; // Paragraph lines position
+
+      // Draw background color only for paragraph lines
+      let maxChars = i < currentLineIndex ? line.length : currentCharIndex;
+      for (let j = 0; j < maxChars; j++) {
+        let charWidth = textWidth(line.charAt(j));
+
+        // Set the background color for paragraphs only
+        fill('#EF5C26');
+        rect(x, y - paragraphFontSize / 2, charWidth, paragraphFontSize);
+
+        // Draw the character on top of the rectangle
+        fill('#FCFCEC');
+        text(line.charAt(j), x, y);
+
+        // Update the x position for the next character
+        x += charWidth;
+      }
     }
   }
-  
-  // Move custom cursor
+
+  // Update typewriter effect
+  if (millis() - lastTypeTime > typeSpeed && !typewriterDone) {
+    lastTypeTime = millis();
+    currentCharIndex++;
+
+    if (currentCharIndex > quoteText[currentLineIndex].length) {
+      currentCharIndex = 0;
+      currentLineIndex++;
+      if (currentLineIndex >= quoteText.length) {
+        typewriterDone = true;
+      }
+    }
+  }
+}
+
+
+
+function updateCursor() {
   if (cursorDiv) {
     cursorDiv.position(mouseX, mouseY);
   }
-  
-  // Update time text with 12-hour format and AM/PM
-  let currentHour = hour();
-  let ampm = currentHour >= 12 ? 'PM' : 'AM';
-  currentHour = currentHour > 12 ? currentHour - 12 : currentHour;
-  if (currentHour === 0) currentHour = 12;
-  timeText = nf(currentHour, 2) + ":" + nf(minute(), 2) + ":" + nf(second(), 2) + " " + ampm;
-  
-  // Move the time display
-  timeX += timeSpeedX;
-  timeY += timeSpeedY;
-  
-  // Simple boundary checking
-  let padding = 20;
-  let textW = textWidth(timeText);
-  
-  // Bounce off edges
-  if (timeX < padding || timeX > width - textW - padding) {
-    timeSpeedX *= -1;
-    // Keep within bounds
-    if (timeX < padding) timeX = padding;
-    if (timeX > width - textW - padding) timeX = width - textW - padding;
-  }
-  
-  if (timeY < padding || timeY > height - 32 - padding) {
-    timeSpeedY *= -1;
-    // Keep within bounds
-    if (timeY < padding) timeY = padding;
-    if (timeY > height - 32 - padding) timeY = height - 32 - padding;
-  }
-  
-  // Display the time
-  // Shadow for better contrast
-  fill(0, 150);
-  textSize(32);
-  text(timeText, timeX + 2, timeY + 2);
-  
-  // Main time text
-  fill(255);
-  textSize(32);
-  text(timeText, timeX, timeY);
-
-  // === Add the "There is no finish line" text here ===
-  // Color change based on mouse position
-  let red = map(mouseX, 0, width, 0, 255);
-  let green = map(mouseY, 0, height, 0, 255);
-  let blue = map(mouseX + mouseY, 0, width + height, 0, 255);
-
-  // Main Title Text
-  textFont('Termina');  // Use 'Termina' font
-  textSize(windowWidth / 30);  // Dynamically set text size based on window width
-  textStyle(BOLD);  // Apply bold style
-  fill(red, green, blue); // Color based on mouse position
-  textAlign(CENTER, CENTER);
-  text('THERE IS NO FINISH LINE.', width / 2, height / 4);
-
-  // Body Text
-  textSize(windowWidth / 40);  // Adjust size for body text
-  fill(red, green, blue); // Color based on mouse position
-  textAlign(CENTER, CENTER);
-  text(`
-    THIS SLOGAN, INTRODUCED IN 1977, was one of NIKE'S EARLIEST and most INFLUENTIAL advertising campaigns.\n
-    It symbolized the idea of CONTINUOUS SELF-IMPROVEMENT, emphasizing that the journey of personal growth and excellence NEVER TRULY ENDS.\n\n
-    The campaign featured imagery of a LONE RUNNER on an EMPTY ROAD, portraying running as both a PHYSICAL and EMOTIONAL experience.\n\n
-    It transcended sports, resonating with broader themes of PERSEVERANCE in life and business.\n\n
-    The message: SUCCESS is not about DEFEATING OTHERS but about CONSTANTLY CHALLENGING ONESELF.
-  `, width / 2, height / 2);
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  
-  // Check device type again on resize
-  checkDevice();
-  
-  // Reset time position on resize
-  timeX = width / 4;
-  timeY = height / 4;
 }
