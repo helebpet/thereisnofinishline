@@ -137,9 +137,9 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: #FCFCEC;
-  border-bottom: 1px solid black;
+  background-color: rgba(252, 252, 236, 0); /* Fully opaque */
 }
+
 
 .left-buttons {
   display: flex;
