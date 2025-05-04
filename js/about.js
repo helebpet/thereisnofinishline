@@ -2,10 +2,6 @@ let bgImage;
 let canvasReady = false;
 let imagesLoaded = 0;
 let activeQuoteIndex = 0;
-let particles = [];
-let lastInteractionTime = 0;
-let autoAdvanceInterval = 8000; // Time in ms to auto-advance quotes
-let userInteracted = false;
 let targetRotation = 0;
 let currentRotation = 0;
 let cursorDiv;
@@ -30,7 +26,7 @@ const quoteText = [
 ];
 
 function preload() {
-  bgImage = loadImage('img/page5.jpg', imageLoaded, loadError);
+  bgImage = loadImage('img/page1.jpg', imageLoaded, loadError);
 }
 
 function imageLoaded() {
@@ -55,9 +51,6 @@ function setup() {
   
   // Create DOM elements with the required styling
   createDomQuote();
-  
-  // Set initial interaction time
-  lastInteractionTime = millis();
   
   // Add ambient animation to the entire page
   document.body.style.overflow = 'hidden';
@@ -98,7 +91,7 @@ function draw() {
   // Drawing functions
   push();
   // Smooth rotation effect based on mouse position
-  if (userInteracted) {
+  if (mouseX !== pmouseX || mouseY !== pmouseY) {
     targetRotation = map(mouseX, 0, width, -0.02, 0.02);
     currentRotation = lerp(currentRotation, targetRotation, 0.05);
   } else {
@@ -113,13 +106,6 @@ function draw() {
   pop();
   
   drawGradientLines();
-  updateParticles();
-  
-  // Auto-advance quotes if no interaction for a while
-  if (millis() - lastInteractionTime > autoAdvanceInterval) {
-    lastInteractionTime = millis();
-    nextQuote();
-  }
   
   // Update custom cursor position
   if (cursorDiv) {
@@ -170,7 +156,7 @@ function drawGradientLines() {
 
 function updateParticles() {
   // Create particles on movement
-  if (userInteracted && frameCount % 3 === 0) {
+  if (mouseX !== pmouseX || mouseY !== pmouseY && frameCount % 3 === 0) {
     createParticle();
   }
   
@@ -223,7 +209,7 @@ class Particle {
 function createDomQuote() {
   const container = createDiv().id('quote-container');
   container.style('position', 'absolute');
-  container.style('top', '10%');
+  container.style('top', '15%'); // Moved down from 10% to 15%
   container.style('left', '10%');
   container.style('max-width', '80%');
   container.style('font-family', 'Termina, sans-serif');
@@ -236,13 +222,14 @@ function createDomQuote() {
   h1.style('font-size', 'clamp(3rem, 7vw, 6rem)');
   h1.style('line-height', '1.2');
   h1.style('font-weight', '900');
-  h1.style('margin-bottom', '1em');
+  h1.style('margin-bottom', '0.7em'); // Reduced bottom margin to move text up
   h1.style('transition', 'opacity 0.5s ease, transform 0.5s ease');
+  h1.id('main-title'); // Add ID for targeting the title
   
   // Create scrollable container for all quotes
   const textContainer = createDiv().id('text-container');
   textContainer.parent(container);
-  textContainer.style('max-height', '50vh'); // Reduced height from 60vh to 50vh
+  textContainer.style('max-height', '40vh'); // Reduced height from 50vh to 40vh
   textContainer.style('overflow-y', 'auto');
   textContainer.style('scrollbar-width', 'thin');
   textContainer.style('scrollbar-color', '#FCFCEC rgba(252, 252, 236, 0.2)');
@@ -264,6 +251,8 @@ function createDomQuote() {
   `;
   document.head.appendChild(scrollbarStyle);
   
+  // We don't need the title in the scrollable area anymore
+  
   // Create all paragraph elements in one scrollable view
   for (let i = 1; i < quoteText.length; i++) {
     const p = createElement('p', quoteText[i]);
@@ -281,14 +270,12 @@ function createDomQuote() {
     p.class('quote-paragraph');
     p.attribute('data-index', i);
     
-    // Add subtle highlight to paragraphs on hover
+    // Simple hover effect - only change opacity without scaling
     p.mouseOver(() => {
-      p.style('transform', 'translateY(0) scale(1.01)');
       p.style('opacity', '1');
     });
     
     p.mouseOut(() => {
-      p.style('transform', 'translateY(0) scale(1)');
       p.style('opacity', '1');
     });
   }
@@ -331,7 +318,7 @@ function createDomQuote() {
     const paragraphs = selectAll('.quote-paragraph');
     
     // Find the most visible paragraph
-    let mostVisibleIndex = 1;
+    let mostVisibleIndex = 1; // Start from 1 since title is not in scroll area
     let maxVisibility = 0;
     
     paragraphs.forEach((p) => {
@@ -353,6 +340,8 @@ function createDomQuote() {
       activeQuoteIndex = mostVisibleIndex;
     }
   });
+  
+  // Removed "Back to Top" button
 }
 
 // Helper function to calculate how visible an element is in the viewport
@@ -381,20 +370,22 @@ function nextQuote() {
   if (activeQuoteIndex < quoteText.length - 1) {
     scrollToQuote(activeQuoteIndex + 1);
   } else {
-    // Scroll back to top when at the end
-    scrollToQuote(1);
+    // Scroll back to title when at the end by scrolling to the top
+    const scrollContainer = select('#text-container');
+    scrollContainer.elt.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
-  updateInteractionTime();
 }
 
 function prevQuote() {
   if (activeQuoteIndex > 1) {
     scrollToQuote(activeQuoteIndex - 1);
   } else {
-    // Cycle to the last quote if at the beginning
+    // When at the beginning (first paragraph), cycle to the last quote
     scrollToQuote(quoteText.length - 1);
   }
-  updateInteractionTime();
 }
 
 // Show all quotes with staggered animation
@@ -424,36 +415,12 @@ function scrollToQuote(index) {
       behavior: 'smooth'
     });
     
-    // Visual feedback
-    targetP.style('transform', 'translateY(0) scale(1.02)');
+    // Simple highlight without scaling effects
+    targetP.style('color', '#ffffff');
     setTimeout(() => {
-      targetP.style('transform', 'translateY(0) scale(1)');
+      targetP.style('color', '#FCFCEC');
     }, 800);
-    
-    // Create particle burst around the target paragraph
-    const rect = targetP.elt.getBoundingClientRect();
-    for (let i = 0; i < 10; i++) {
-      particles.push(new Particle(
-        random(rect.left, rect.right),
-        random(rect.top, rect.bottom)
-      ));
-    }
   }
-}
-
-function updateInteractionTime() {
-  lastInteractionTime = millis();
-}
-
-// Track mouse movement
-function mouseMoved() {
-  userInteracted = true;
-  updateInteractionTime();
-  
-  // Reset after inactivity
-  setTimeout(() => {
-    userInteracted = false;
-  }, 5000);
 }
 
 // Add keyboard navigation
@@ -464,13 +431,19 @@ function keyPressed() {
     nextQuote();
   } else if (keyCode === 32) { // Space bar
     nextQuote();
+  } else if (keyCode === 27) { // Escape key
+    // Scroll to the top of the container
+    const scrollContainer = select('#text-container');
+    scrollContainer.elt.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   } else if (keyCode >= 49 && keyCode <= 57) { // Number keys 1-9
     const quoteIndex = keyCode - 48;
-    if (quoteIndex < quoteText.length) {
+    if (quoteIndex < quoteText.length && quoteIndex > 0) {
       scrollToQuote(quoteIndex);
     }
   }
-  updateInteractionTime();
 }
 
 // Add tilt interaction for mobile
@@ -478,18 +451,6 @@ window.addEventListener('deviceorientation', (event) => {
   if (event.gamma) {
     const tilt = constrain(event.gamma, -20, 20);
     targetRotation = map(tilt, -20, 20, -0.05, 0.05);
-    userInteracted = true;
-    
-    // Create particles on tilt
-    if (frameCount % 10 === 0) {
-      particles.push(new Particle(random(width), random(height)));
-    }
-    
-    // Reset after inactivity
-    clearTimeout(window.tiltTimeout);
-    window.tiltTimeout = setTimeout(() => {
-      userInteracted = false;
-    }, 5000);
   }
 });
 
@@ -500,17 +461,6 @@ function windowResized() {
 
 // Add scroll navigation with smooth animation
 function mouseWheel(event) {
-  const direction = event.delta > 0 ? 1 : -1;
-  let targetIndex = activeQuoteIndex + direction;
-  
-  // Keep within bounds
-  targetIndex = constrain(targetIndex, 1, quoteText.length - 1);
-  
-  if (targetIndex !== activeQuoteIndex) {
-    scrollToQuote(targetIndex);
-  }
-  
-  updateInteractionTime();
-  // Prevent default scrolling
-  return false;
+  // Let the native scrolling handle this
+  return true;
 }
