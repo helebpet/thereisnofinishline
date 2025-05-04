@@ -8,6 +8,7 @@ let autoAdvanceInterval = 8000; // Time in ms to auto-advance quotes
 let userInteracted = false;
 let targetRotation = 0;
 let currentRotation = 0;
+let cursorDiv;
 
 const quoteText = [
   "THERE IS\nNO FINISH LINE.",
@@ -49,14 +50,11 @@ function setup() {
   cnv.style('display', 'none');
   frameRate(60);
   
-  // Use custom CSS cursor instead of hiding the cursor
-  select('body').style('cursor', 'inherit'); // Will use your custom cursor from CSS
+  // Hide cursor and use custom cursor
+  noCursor();
   
   // Create DOM elements with the required styling
   createDomQuote();
-  
-  // Create smooth scrolling timeline
-  createNavigationControls();
   
   // Set initial interaction time
   lastInteractionTime = millis();
@@ -67,8 +65,25 @@ function setup() {
   // Apply initial progress
   setTimeout(() => {
     showAllQuotes(); // Show all quotes at once
-    updateProgress();
   }, 500);
+  
+  // Set up the custom cursor
+  cursorDiv = select('.custom-cursor');
+  if (!cursorDiv) {
+    // Create custom cursor if it doesn't exist
+    cursorDiv = createDiv();
+    cursorDiv.class('custom-cursor');
+    cursorDiv.style('position', 'fixed');
+    cursorDiv.style('width', '24px');
+    cursorDiv.style('height', '24px');
+    cursorDiv.style('border-radius', '50%');
+    cursorDiv.style('background-color', 'rgba(252, 252, 236, 0.5)');
+    cursorDiv.style('border', '1px solid rgba(252, 252, 236, 0.8)');
+    cursorDiv.style('pointer-events', 'none');
+    cursorDiv.style('transform', 'translate(-50%, -50%)');
+    cursorDiv.style('z-index', '9999');
+    cursorDiv.style('mix-blend-mode', 'difference');
+  }
 }
 
 function draw() {
@@ -98,26 +113,35 @@ function draw() {
   pop();
   
   drawGradientLines();
-  updateAndDrawParticles();
+  updateParticles();
   
   // Auto-advance quotes if no interaction for a while
   if (millis() - lastInteractionTime > autoAdvanceInterval) {
     lastInteractionTime = millis();
     nextQuote();
   }
+  
+  // Update custom cursor position
+  if (cursorDiv) {
+    cursorDiv.position(mouseX, mouseY);
+  }
 }
 
 function drawBackground() {
+  // Enlarge background to prevent white edges when rotating
   let aspectRatio = bgImage.width / bgImage.height;
   let canvasRatio = width / height;
   let drawWidth, drawHeight;
+  
+  // Add extra size to prevent white edges (20% extra)
+  const scaleFactor = 1.2;
 
   if (canvasRatio > aspectRatio) {
-    drawWidth = width;
-    drawHeight = width / aspectRatio;
+    drawWidth = width * scaleFactor;
+    drawHeight = (width * scaleFactor) / aspectRatio;
   } else {
-    drawHeight = height;
-    drawWidth = height * aspectRatio;
+    drawHeight = height * scaleFactor;
+    drawWidth = (height * scaleFactor) * aspectRatio;
   }
 
   let offsetX = (width - drawWidth) / 2;
@@ -144,7 +168,7 @@ function drawGradientLines() {
   }
 }
 
-function updateAndDrawParticles() {
+function updateParticles() {
   // Create particles on movement
   if (userInteracted && frameCount % 3 === 0) {
     createParticle();
@@ -161,8 +185,6 @@ function updateAndDrawParticles() {
       particles.splice(i, 1);
     }
   }
-  
-  // We don't draw a custom cursor anymore, using CSS cursor instead
 }
 
 function createParticle() {
@@ -206,7 +228,6 @@ function createDomQuote() {
   container.style('max-width', '80%');
   container.style('font-family', 'Termina, sans-serif');
   container.style('z-index', '10');
-  container.style('cursor', 'inherit'); // Will use your custom cursor from CSS
   
   // Title (first quote)
   const h1 = createElement('h1', quoteText[0]);
@@ -221,7 +242,7 @@ function createDomQuote() {
   // Create scrollable container for all quotes
   const textContainer = createDiv().id('text-container');
   textContainer.parent(container);
-  textContainer.style('max-height', '60vh');
+  textContainer.style('max-height', '50vh'); // Reduced height from 60vh to 50vh
   textContainer.style('overflow-y', 'auto');
   textContainer.style('scrollbar-width', 'thin');
   textContainer.style('scrollbar-color', '#FCFCEC rgba(252, 252, 236, 0.2)');
@@ -330,7 +351,6 @@ function createDomQuote() {
     // Update active quote index without animation
     if (mostVisibleIndex !== activeQuoteIndex) {
       activeQuoteIndex = mostVisibleIndex;
-      updateProgress();
     }
   });
 }
@@ -355,162 +375,6 @@ function calculateVisibility(scrollPos, elemTop, elemHeight, viewportHeight) {
   
   // Return visibility as percentage of element height
   return visibleHeight / elemHeight;
-}
-
-function createNavigationControls() {
-  // Create a timeline that serves as navigation and progress indicator
-  const navContainer = createDiv().id('nav-container');
-  navContainer.style('position', 'fixed');
-  navContainer.style('bottom', '5%');
-  navContainer.style('left', '50%');
-  navContainer.style('transform', 'translateX(-50%)');
-  navContainer.style('display', 'flex');
-  navContainer.style('align-items', 'center');
-  navContainer.style('gap', '15px');
-  navContainer.style('z-index', '20');
-  navContainer.style('cursor', 'inherit'); // Will use your custom cursor from CSS
-  
-  // Timeline bar
-  const timeline = createDiv().id('timeline');
-  timeline.parent(navContainer);
-  timeline.style('width', '60vw');
-  timeline.style('height', '2px');
-  timeline.style('background-color', 'rgba(252, 252, 236, 0.3)');
-  timeline.style('position', 'relative');
-  timeline.style('cursor', 'pointer');
-  
-  // Progress bar
-  const progress = createDiv().id('progress');
-  progress.parent(timeline);
-  progress.style('position', 'absolute');
-  progress.style('left', '0');
-  progress.style('top', '0');
-  progress.style('height', '100%');
-  progress.style('width', '0%');
-  progress.style('background-color', '#FCFCEC');
-  progress.style('transition', 'width 0.5s ease');
-  
-  // Create markers for each quote section to help navigate
-  for (let i = 1; i < quoteText.length; i++) {
-    const percent = (i / (quoteText.length - 1)) * 100;
-    
-    const marker = createDiv();
-    marker.parent(timeline);
-    marker.style('position', 'absolute');
-    marker.style('left', percent + '%');
-    marker.style('top', '50%');
-    marker.style('transform', 'translate(-50%, -50%)');
-    marker.style('width', '8px');
-    marker.style('height', '8px');
-    marker.style('border-radius', '50%');
-    marker.style('background-color', '#FCFCEC');
-    marker.style('transition', 'transform 0.3s ease, opacity 0.3s ease');
-    marker.style('opacity', '0.6');
-    marker.class('timeline-marker');
-    marker.attribute('data-index', i);
-    
-    // Marker hover effect and click
-    marker.mouseOver(() => {
-      marker.style('transform', 'translate(-50%, -50%) scale(1.5)');
-      marker.style('opacity', '1');
-      
-      // Show tooltip with quote preview
-      const tooltip = createDiv(quoteText[i].substring(0, 20) + '...');
-      tooltip.parent(marker);
-      tooltip.style('position', 'absolute');
-      tooltip.style('bottom', '15px');
-      tooltip.style('left', '50%');
-      tooltip.style('transform', 'translateX(-50%)');
-      tooltip.style('background-color', 'rgba(0, 0, 0, 0.7)');
-      tooltip.style('color', '#FCFCEC');
-      tooltip.style('padding', '5px 10px');
-      tooltip.style('border-radius', '4px');
-      tooltip.style('font-size', '12px');
-      tooltip.style('white-space', 'nowrap');
-      tooltip.style('pointer-events', 'none');
-      tooltip.id('tooltip-' + i);
-    });
-    
-    marker.mouseOut(() => {
-      marker.style('transform', 'translate(-50%, -50%) scale(1)');
-      marker.style('opacity', '0.6');
-      select('#tooltip-' + i)?.remove();
-    });
-    
-    marker.mousePressed(() => {
-      // Smooth scroll to that paragraph when clicking on marker
-      scrollToQuote(i);
-      updateHighlightFromScroll(i);
-      updateInteractionTime();
-    });
-  }
-  
-  // Make timeline clickable
-  timeline.mousePressed(() => {
-    const bounds = timeline.elt.getBoundingClientRect();
-    const clickPos = mouseX - bounds.left;
-    const percentage = clickPos / bounds.width;
-    const quoteIndex = Math.max(1, Math.min(
-      Math.floor(percentage * (quoteText.length - 1)) + 1,
-      quoteText.length - 1
-    ));
-    
-    scrollToQuote(quoteIndex);
-    updateHighlightFromScroll(quoteIndex);
-    updateInteractionTime();
-  });
-}
-
-// Scroll smoothly to a specific quote
-function scrollToQuote(index) {
-  const targetP = select('.quote-paragraph[data-index="' + index + '"]');
-  if (targetP) {
-    // Get the scroll container and target element's position
-    const scrollContainer = select('#text-container');
-    const targetTop = targetP.elt.offsetTop;
-    
-    // Smooth scroll to the target element
-    scrollContainer.elt.scrollTo({
-      top: targetTop - 20, // Offset to position it nicely
-      behavior: 'smooth'
-    });
-    
-    // Visual feedback
-    targetP.style('transform', 'translateY(0) scale(1.02)');
-    setTimeout(() => {
-      targetP.style('transform', 'translateY(0) scale(1)');
-    }, 800);
-    
-    // Create particle burst around the target paragraph
-    const rect = targetP.elt.getBoundingClientRect();
-    for (let i = 0; i < 10; i++) {
-      particles.push(new Particle(
-        random(rect.left, rect.right),
-        random(rect.top, rect.bottom)
-      ));
-    }
-  }
-}
-
-function updateProgress() {
-  // Update progress bar
-  const progressPercent = (activeQuoteIndex - 1) / (quoteText.length - 2) * 100;
-  select('#progress').style('width', progressPercent + '%');
-  
-  // Update counter
-  select('#current-quote').html(activeQuoteIndex);
-  
-  // Update markers
-  selectAll('.timeline-marker').forEach((marker) => {
-    const index = parseInt(marker.attribute('data-index'));
-    if (index <= activeQuoteIndex) {
-      marker.style('background-color', '#FCFCEC');
-      marker.style('opacity', '1');
-    } else {
-      marker.style('background-color', '#FCFCEC');
-      marker.style('opacity', '0.4');
-    }
-  });
 }
 
 function nextQuote() {
@@ -546,10 +410,35 @@ function showAllQuotes() {
   });
 }
 
-// When user scrolls to a specific section, highlight it in the timeline
-function updateHighlightFromScroll(index) {
-  activeQuoteIndex = index;
-  updateProgress();
+// Scroll smoothly to a specific quote
+function scrollToQuote(index) {
+  const targetP = select('.quote-paragraph[data-index="' + index + '"]');
+  if (targetP) {
+    // Get the scroll container and target element's position
+    const scrollContainer = select('#text-container');
+    const targetTop = targetP.elt.offsetTop;
+    
+    // Smooth scroll to the target element
+    scrollContainer.elt.scrollTo({
+      top: targetTop - 20, // Offset to position it nicely
+      behavior: 'smooth'
+    });
+    
+    // Visual feedback
+    targetP.style('transform', 'translateY(0) scale(1.02)');
+    setTimeout(() => {
+      targetP.style('transform', 'translateY(0) scale(1)');
+    }, 800);
+    
+    // Create particle burst around the target paragraph
+    const rect = targetP.elt.getBoundingClientRect();
+    for (let i = 0; i < 10; i++) {
+      particles.push(new Particle(
+        random(rect.left, rect.right),
+        random(rect.top, rect.bottom)
+      ));
+    }
+  }
 }
 
 function updateInteractionTime() {
@@ -578,8 +467,7 @@ function keyPressed() {
   } else if (keyCode >= 49 && keyCode <= 57) { // Number keys 1-9
     const quoteIndex = keyCode - 48;
     if (quoteIndex < quoteText.length) {
-      showQuote(quoteIndex);
-      updateProgress();
+      scrollToQuote(quoteIndex);
     }
   }
   updateInteractionTime();
@@ -608,7 +496,6 @@ window.addEventListener('deviceorientation', (event) => {
 // Update on window resize
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  updateProgress();
 }
 
 // Add scroll navigation with smooth animation
@@ -620,7 +507,7 @@ function mouseWheel(event) {
   targetIndex = constrain(targetIndex, 1, quoteText.length - 1);
   
   if (targetIndex !== activeQuoteIndex) {
-    showQuote(targetIndex);
+    scrollToQuote(targetIndex);
   }
   
   updateInteractionTime();
