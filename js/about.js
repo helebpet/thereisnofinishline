@@ -48,12 +48,14 @@ function setup() {
   let cnv = createCanvas(windowWidth, windowHeight);
   cnv.style('display', 'none');
   frameRate(60);
-  noCursor();
-
+  
+  // Use custom CSS cursor instead of hiding the cursor
+  select('body').style('cursor', 'inherit'); // Will use your custom cursor from CSS
+  
   // Create DOM elements with the required styling
   createDomQuote();
   
-  // Create interactive navigation controls
+  // Create smooth scrolling timeline
   createNavigationControls();
   
   // Set initial interaction time
@@ -64,7 +66,7 @@ function setup() {
   
   // Apply initial progress
   setTimeout(() => {
-    showQuote(1);
+    showAllQuotes(); // Show all quotes at once
     updateProgress();
   }, 500);
 }
@@ -160,12 +162,7 @@ function updateAndDrawParticles() {
     }
   }
   
-  // Custom cursor
-  noStroke();
-  fill(252, 252, 236, 180); // #FCFCEC with transparency
-  circle(mouseX, mouseY, 15);
-  fill(252, 252, 236);
-  circle(mouseX, mouseY, 6);
+  // We don't draw a custom cursor anymore, using CSS cursor instead
 }
 
 function createParticle() {
@@ -204,12 +201,12 @@ class Particle {
 function createDomQuote() {
   const container = createDiv().id('quote-container');
   container.style('position', 'absolute');
-  container.style('top', '20%');
+  container.style('top', '10%');
   container.style('left', '10%');
   container.style('max-width', '80%');
   container.style('font-family', 'Termina, sans-serif');
   container.style('z-index', '10');
-  container.style('cursor', 'none');
+  container.style('cursor', 'inherit'); // Will use your custom cursor from CSS
   
   // Title (first quote)
   const h1 = createElement('h1', quoteText[0]);
@@ -219,41 +216,159 @@ function createDomQuote() {
   h1.style('line-height', '1.2');
   h1.style('font-weight', '900');
   h1.style('margin-bottom', '1em');
+  h1.style('transition', 'opacity 0.5s ease, transform 0.5s ease');
   
-  // Container for paragraph quotes (will be displayed one at a time)
-  const paragraphContainer = createDiv().id('paragraph-container');
-  paragraphContainer.parent(container);
+  // Create scrollable container for all quotes
+  const textContainer = createDiv().id('text-container');
+  textContainer.parent(container);
+  textContainer.style('max-height', '60vh');
+  textContainer.style('overflow-y', 'auto');
+  textContainer.style('scrollbar-width', 'thin');
+  textContainer.style('scrollbar-color', '#FCFCEC rgba(252, 252, 236, 0.2)');
+  textContainer.style('padding-right', '20px');
   
-  // Create all paragraph elements but initially hide them except the first one
+  // Custom scrollbar styling
+  const scrollbarStyle = document.createElement('style');
+  scrollbarStyle.innerHTML = `
+    #text-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    #text-container::-webkit-scrollbar-track {
+      background: rgba(252, 252, 236, 0.1);
+    }
+    #text-container::-webkit-scrollbar-thumb {
+      background-color: rgba(252, 252, 236, 0.5);
+      border-radius: 6px;
+    }
+  `;
+  document.head.appendChild(scrollbarStyle);
+  
+  // Create all paragraph elements in one scrollable view
   for (let i = 1; i < quoteText.length; i++) {
     const p = createElement('p', quoteText[i]);
-    p.parent(paragraphContainer);
+    p.parent(textContainer);
     p.style('color', '#FCFCEC');
     p.style('font-weight', '600');
     p.style('font-size', 'clamp(1.2rem, 2.5vw, 2rem)');
     p.style('line-height', '1.6');
     p.style('letter-spacing', '-0.11em');
     p.style('text-align', 'left');
-    p.style('margin-bottom', '1rem');
-    p.style('opacity', i === 1 ? '1' : '0'); // Only show the first paragraph
-    p.style('transition', 'opacity 0.5s ease');
-    p.style('display', i === 1 ? 'block' : 'none');
+    p.style('margin-bottom', '1.5rem');
+    p.style('opacity', '0'); // Start invisible
+    p.style('transform', 'translateY(15px)');
+    p.style('transition', 'opacity 0.8s ease, transform 0.8s ease');
     p.class('quote-paragraph');
+    p.attribute('data-index', i);
+    
+    // Add subtle highlight to paragraphs on hover
+    p.mouseOver(() => {
+      p.style('transform', 'translateY(0) scale(1.01)');
+      p.style('opacity', '1');
+    });
+    
+    p.mouseOut(() => {
+      p.style('transform', 'translateY(0) scale(1)');
+      p.style('opacity', '1');
+    });
   }
+  
+  // Add indicator to encourage scrolling
+  const scrollIndicator = createDiv().id('scroll-indicator');
+  scrollIndicator.parent(container);
+  scrollIndicator.style('margin-top', '10px');
+  scrollIndicator.style('text-align', 'center');
+  scrollIndicator.style('opacity', '0.7');
+  scrollIndicator.style('transition', 'opacity 0.3s ease');
+  
+  const scrollText = createP('Scroll to explore').parent(scrollIndicator);
+  scrollText.style('color', '#FCFCEC');
+  scrollText.style('font-size', '0.9rem');
+  scrollText.style('margin', '0');
+  
+  const scrollArrow = createDiv('↓').parent(scrollIndicator);
+  scrollArrow.style('color', '#FCFCEC');
+  scrollArrow.style('font-size', '1.2rem');
+  scrollArrow.style('animation', 'bounce 2s infinite');
+  
+  // Add bounce animation
+  const bounceStyle = document.createElement('style');
+  bounceStyle.innerHTML = `
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+      40% {transform: translateY(-10px);}
+      60% {transform: translateY(-5px);}
+    }
+  `;
+  document.head.appendChild(bounceStyle);
+  
+  // Hide scroll indicator when scrolling starts
+  textContainer.elt.addEventListener('scroll', () => {
+    scrollIndicator.style('opacity', '0');
+    
+    // Determine which quote is in view based on scroll position
+    const scrollPosition = textContainer.elt.scrollTop;
+    const paragraphs = selectAll('.quote-paragraph');
+    
+    // Find the most visible paragraph
+    let mostVisibleIndex = 1;
+    let maxVisibility = 0;
+    
+    paragraphs.forEach((p) => {
+      const pIndex = parseInt(p.attribute('data-index'));
+      const pTop = p.elt.offsetTop;
+      const pHeight = p.elt.offsetHeight;
+      
+      // Calculate how visible this paragraph is
+      const visibility = calculateVisibility(scrollPosition, pTop, pHeight, textContainer.elt.offsetHeight);
+      
+      if (visibility > maxVisibility) {
+        maxVisibility = visibility;
+        mostVisibleIndex = pIndex;
+      }
+    });
+    
+    // Update active quote index without animation
+    if (mostVisibleIndex !== activeQuoteIndex) {
+      activeQuoteIndex = mostVisibleIndex;
+      updateProgress();
+    }
+  });
+}
+
+// Helper function to calculate how visible an element is in the viewport
+function calculateVisibility(scrollPos, elemTop, elemHeight, viewportHeight) {
+  const viewTop = scrollPos;
+  const viewBottom = scrollPos + viewportHeight;
+  
+  // Element boundaries
+  const elemBottom = elemTop + elemHeight;
+  
+  // Element is not visible at all
+  if (elemBottom < viewTop || elemTop > viewBottom) {
+    return 0;
+  }
+  
+  // Calculate visible height of element
+  const visibleTop = Math.max(elemTop, viewTop);
+  const visibleBottom = Math.min(elemBottom, viewBottom);
+  const visibleHeight = visibleBottom - visibleTop;
+  
+  // Return visibility as percentage of element height
+  return visibleHeight / elemHeight;
 }
 
 function createNavigationControls() {
-  // Create a timeline that serves as navigation
+  // Create a timeline that serves as navigation and progress indicator
   const navContainer = createDiv().id('nav-container');
   navContainer.style('position', 'fixed');
-  navContainer.style('bottom', '10%');
+  navContainer.style('bottom', '5%');
   navContainer.style('left', '50%');
   navContainer.style('transform', 'translateX(-50%)');
   navContainer.style('display', 'flex');
   navContainer.style('align-items', 'center');
   navContainer.style('gap', '15px');
   navContainer.style('z-index', '20');
-  navContainer.style('cursor', 'none');
+  navContainer.style('cursor', 'inherit'); // Will use your custom cursor from CSS
   
   // Timeline bar
   const timeline = createDiv().id('timeline');
@@ -275,7 +390,7 @@ function createNavigationControls() {
   progress.style('background-color', '#FCFCEC');
   progress.style('transition', 'width 0.5s ease');
   
-  // Create markers for each quote
+  // Create markers for each quote section to help navigate
   for (let i = 1; i < quoteText.length; i++) {
     const percent = (i / (quoteText.length - 1)) * 100;
     
@@ -298,16 +413,34 @@ function createNavigationControls() {
     marker.mouseOver(() => {
       marker.style('transform', 'translate(-50%, -50%) scale(1.5)');
       marker.style('opacity', '1');
+      
+      // Show tooltip with quote preview
+      const tooltip = createDiv(quoteText[i].substring(0, 20) + '...');
+      tooltip.parent(marker);
+      tooltip.style('position', 'absolute');
+      tooltip.style('bottom', '15px');
+      tooltip.style('left', '50%');
+      tooltip.style('transform', 'translateX(-50%)');
+      tooltip.style('background-color', 'rgba(0, 0, 0, 0.7)');
+      tooltip.style('color', '#FCFCEC');
+      tooltip.style('padding', '5px 10px');
+      tooltip.style('border-radius', '4px');
+      tooltip.style('font-size', '12px');
+      tooltip.style('white-space', 'nowrap');
+      tooltip.style('pointer-events', 'none');
+      tooltip.id('tooltip-' + i);
     });
     
     marker.mouseOut(() => {
       marker.style('transform', 'translate(-50%, -50%) scale(1)');
       marker.style('opacity', '0.6');
+      select('#tooltip-' + i)?.remove();
     });
     
     marker.mousePressed(() => {
-      showQuote(i);
-      updateProgress();
+      // Smooth scroll to that paragraph when clicking on marker
+      scrollToQuote(i);
+      updateHighlightFromScroll(i);
       updateInteractionTime();
     });
   }
@@ -322,19 +455,41 @@ function createNavigationControls() {
       quoteText.length - 1
     ));
     
-    showQuote(quoteIndex);
-    updateProgress();
+    scrollToQuote(quoteIndex);
+    updateHighlightFromScroll(quoteIndex);
     updateInteractionTime();
   });
-  
-  // Quote counter text
-  const counter = createDiv().id('quote-counter');
-  counter.parent(navContainer);
-  counter.style('color', '#FCFCEC');
-  counter.style('font-family', 'Termina, sans-serif');
-  counter.style('font-size', '14px');
-  counter.style('font-weight', '600');
-  counter.html(`<span id="current-quote">1</span>/${quoteText.length - 1}`);
+}
+
+// Scroll smoothly to a specific quote
+function scrollToQuote(index) {
+  const targetP = select('.quote-paragraph[data-index="' + index + '"]');
+  if (targetP) {
+    // Get the scroll container and target element's position
+    const scrollContainer = select('#text-container');
+    const targetTop = targetP.elt.offsetTop;
+    
+    // Smooth scroll to the target element
+    scrollContainer.elt.scrollTo({
+      top: targetTop - 20, // Offset to position it nicely
+      behavior: 'smooth'
+    });
+    
+    // Visual feedback
+    targetP.style('transform', 'translateY(0) scale(1.02)');
+    setTimeout(() => {
+      targetP.style('transform', 'translateY(0) scale(1)');
+    }, 800);
+    
+    // Create particle burst around the target paragraph
+    const rect = targetP.elt.getBoundingClientRect();
+    for (let i = 0; i < 10; i++) {
+      particles.push(new Particle(
+        random(rect.left, rect.right),
+        random(rect.top, rect.bottom)
+      ));
+    }
+  }
 }
 
 function updateProgress() {
@@ -358,59 +513,43 @@ function updateProgress() {
   });
 }
 
-function prevQuote() {
-  if (activeQuoteIndex > 1) {
-    showQuote(activeQuoteIndex - 1);
-  } else {
-    // Cycle to the last quote if at the beginning
-    showQuote(quoteText.length - 1);
-  }
-  updateInteractionTime();
-}
-
 function nextQuote() {
   if (activeQuoteIndex < quoteText.length - 1) {
-    showQuote(activeQuoteIndex + 1);
+    scrollToQuote(activeQuoteIndex + 1);
   } else {
-    // Cycle to the first quote if at the end
-    showQuote(1);
+    // Scroll back to top when at the end
+    scrollToQuote(1);
   }
   updateInteractionTime();
 }
 
-function showQuote(index) {
-  // Hide current quote
-  selectAll('.quote-paragraph').forEach((p, i) => {
-    if (i + 1 === activeQuoteIndex) {
-      p.style('opacity', '0');
-      p.style('transform', 'translateY(20px)');
-      setTimeout(() => {
-        p.style('display', 'none');
-      }, 500);
-    }
-  });
-  
-  // Show new quote
-  selectAll('.quote-paragraph').forEach((p, i) => {
-    if (i + 1 === index) {
-      p.style('display', 'block');
-      p.style('transform', 'translateY(20px)');
-      setTimeout(() => {
-        p.style('opacity', '1');
-        p.style('transform', 'translateY(0)');
-      }, 50);
-    }
-  });
-  
-  // Update the progress bar and timeline markers
-  updateProgress();
-  
-  activeQuoteIndex = index;
-  
-  // Create burst of particles for transition
-  for (let i = 0; i < 15; i++) {
-    particles.push(new Particle(random(width), random(height)));
+function prevQuote() {
+  if (activeQuoteIndex > 1) {
+    scrollToQuote(activeQuoteIndex - 1);
+  } else {
+    // Cycle to the last quote if at the beginning
+    scrollToQuote(quoteText.length - 1);
   }
+  updateInteractionTime();
+}
+
+// Show all quotes with staggered animation
+function showAllQuotes() {
+  selectAll('.quote-paragraph').forEach((p, i) => {
+    p.style('display', 'block'); 
+    
+    // Staggered animation for each paragraph
+    setTimeout(() => {
+      p.style('opacity', '1');
+      p.style('transform', 'translateY(0)');
+    }, 100 + (i * 150)); // Stagger by 150ms per paragraph
+  });
+}
+
+// When user scrolls to a specific section, highlight it in the timeline
+function updateHighlightFromScroll(index) {
+  activeQuoteIndex = index;
+  updateProgress();
 }
 
 function updateInteractionTime() {
