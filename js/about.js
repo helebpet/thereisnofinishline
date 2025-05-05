@@ -7,22 +7,22 @@ let currentRotation = 0;
 let cursorDiv;
 
 const quoteText = [
-  "THERE IS\nNO FINISH LINE.",
-  "THIS SLOGAN, INTRODUCED IN 1977,",
-  "was one of NIKE'S EARLIEST and most INFLUENTIAL advertising campaigns.",
-  "It symbolized the idea of CONTINUOUS SELF-IMPROVEMENT,",
-  "emphasizing that the journey of personal growth and excellence",
-  "NEVER TRULY ENDS.",
-  "The campaign featured imagery of a LONE RUNNER on an EMPTY ROAD,",
-  "portraying running as both a PHYSICAL and EMOTIONAL experience.",
-  "It transcended sports,",
-  "resonating with broader themes of PERSEVERANCE in life and business.",
-  "The message:",
-  "SUCCESS is not about DEFEATING OTHERS,",
-  "but about CONSTANTLY CHALLENGING ONESELF.",
-  "This idea became a cornerstone of NIKE'S philosophy.",
-  "It reminds us that the path to greatness is endless,",
-  "and the true victory lies in the journey itself."
+  "THERE  IS\nNO  FINISH  LINE.",
+  "THIS  SLOGAN,  INTRODUCED  IN  1977,",
+  "was  one  of  NIKE'S  EARLIEST  and  most  INFLUENTIAL  advertising  campaigns.",
+  "It  symbolized  the  idea  of  CONTINUOUS  SELF-IMPROVEMENT,",
+  "emphasizing  that  the  journey  of  personal  growth  and  excellence",
+  "NEVER  TRULY  ENDS.",
+  "The  campaign  featured  imagery  of  a  LONE  RUNNER  on  an  EMPTY  ROAD,",
+  "portraying  running  as  both  a  PHYSICAL  and  EMOTIONAL  experience.",
+  "It  transcended  sports,",
+  "resonating  with  broader  themes  of  PERSEVERANCE  in  life  and  business.",
+  "The  message:",
+  "SUCCESS  is  not  about  DEFEATING  OTHERS,",
+  "but  about  CONSTANTLY   CHALLENGING  ONESELF.",
+  "This  idea  became  a  cornerstone  of  NIKE'S  philosophy.",
+  "It  reminds  us  that  the  path  to  greatness  is  endless,",
+  "and  the  true  victory  lies  in  the  journey  itself."
 ];
 
 function preload() {
