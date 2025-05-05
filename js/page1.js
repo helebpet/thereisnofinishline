@@ -41,6 +41,9 @@ function setup() {
   noCursor();
   cursorDiv = select('.custom-cursor');
   
+  // Set the background color to match the cream color from the image
+  document.body.style.backgroundColor = '#FCFCEC';
+  
   // Check if device is mobile
   checkDevice();
   
@@ -61,6 +64,9 @@ function draw() {
   if (cnv && cnv.style('display') === 'none') {
     cnv.style('display', 'block'); // show canvas once image is ready
   }
+  
+  // Set background to match the cream color from image
+  background('#FCFCEC');
   
   // Choose the appropriate background image based on device
   let currentBg = isMobile ? bgImageMobile : bgImage;
@@ -84,7 +90,7 @@ function draw() {
   
   image(currentBg, offsetX, offsetY, drawWidth, drawHeight);
   
-  // Draw animated black lines
+  // Draw animated black lines (changed from lime-green to black)
   stroke(0);
   strokeWeight(1);
   for (let y = 0; y < currentLine * 10; y += 10) {
@@ -136,24 +142,42 @@ function drawStopwatch() {
   push();
   translate(stopwatchX, stopwatchY);
   
-  // Draw stopwatch face
-  fill(0);
-  noStroke();
-  ellipse(0, 0, stopwatchSize + 20, stopwatchSize + 20); // Outer black circle
-  
-  // Draw stopwatch button
+  // Draw buttons first (behind the main watch face)
+  // Draw stopwatch button (now orange with outline)
+  stroke('#EF5C26'); // Orange outline
+  strokeWeight(1);
+  fill('#EF5C26'); // Orange fill
   ellipse(0, -stopwatchSize/2 - 10, 20, 20);
   
-  // Draw side button
+  // Draw side button (now orange with outline)
+  stroke('#EF5C26'); // Orange outline
+  strokeWeight(1);
+  fill('#EF5C26'); // Orange fill
   ellipse(stopwatchSize/2 + 5, -stopwatchSize/6, 15, 15);
   
-  // Draw white face
-  fill(255);
-  ellipse(0, 0, stopwatchSize, stopwatchSize);
+  // Create gradient for stopwatch body
+  let from = color('#FCFCEC'); // Cream color
+  let to = color('#D7DA1B');   // Lime-yellow color
+  
+  // Draw stopwatch face with gradient
+  noStroke();
+  
+  // Outer circle now green (matching text color)
+  fill('#04AD74');
+  ellipse(0, 0, stopwatchSize + 20, stopwatchSize + 20);
+  
+  // Draw main face with gradient (cream to lime)
+  // Since p5.js doesn't have built-in radial gradients, we'll simulate one with concentric circles
+  for (let i = stopwatchSize; i > 0; i -= 2) {
+    let inter = map(i, 0, stopwatchSize, 0, 1);
+    let c = lerpColor(from, to, inter);
+    fill(c);
+    ellipse(0, 0, i, i);
+  }
   
   // Draw tick marks
-  stroke(0);
-  strokeWeight(1);
+  stroke('#04AD74'); // Teal color for ticks
+  strokeWeight(1.5);
   for (let i = 0; i < 60; i++) {
     let angle = map(i, 0, 60, 0, TWO_PI) - HALF_PI;
     let tickLength = i % 5 === 0 ? 10 : 5; // Longer ticks for every 5 seconds
@@ -169,10 +193,10 @@ function drawStopwatch() {
     if (i % 5 === 0) {
       push();
       noStroke();
-      fill(0);
-      textSize(12);
+      fill('#04AD74'); // Teal color for numbers
+      textSize(8);
       textAlign(CENTER, CENTER);
-      textFont('Courier New, monospace'); // Terminal-style font
+      textFont('Termina');
       
       // Position for the numbers (slightly inward from the tick marks)
       let textX = (stopwatchSize/2 - 24) * cos(angle);
@@ -192,14 +216,14 @@ function drawStopwatch() {
   // Calculate angle for seconds hand
   let secondsAngle = map(smoothSeconds, 0, 60, 0, TWO_PI) - HALF_PI;
   
-  // Draw seconds hand
-  stroke(0);
-  strokeWeight(2);
+  // Draw seconds hand with teal color
+  stroke('#04AD74');
+  strokeWeight(2.5);
   let handLength = stopwatchSize/2 - 15;
   line(0, 0, handLength * cos(secondsAngle), handLength * sin(secondsAngle));
   
   // Draw center pin
-  fill(0);
+  fill('#04AD74');
   noStroke();
   ellipse(0, 0, 8, 8);
   
@@ -212,7 +236,7 @@ function windowResized() {
   // Check device type again on resize
   checkDevice();
   
-  // Reset stopwatch position on resize to center
-  stopwatchX = width / 2;
-  stopwatchY = height / 2;
+  // Reset stopwatch position on resize
+  stopwatchX = width / 4;
+  stopwatchY = height / 4;
 }
