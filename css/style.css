@@ -79,7 +79,6 @@ canvas {
 
 /* -------------------- BUTTONS -------------------- */
 button,
-.circle-button,
 .arrow-button {
   width: 130px;
   height: 64px;
@@ -100,6 +99,118 @@ button,
   text-decoration: none;
 }
 
+/* Circle button base styling */
+.circle-button {
+  width: 130px;
+  height: 64px;
+  padding: 0;
+  border: 1px solid black;
+  border-radius: 9999px;
+  background-color: #EFBD06;
+  color: black;
+  font-size: 16px;
+  cursor: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Termina ExtraLight", sans-serif;
+  font-weight: 200;
+  white-space: nowrap;
+  text-align: center;
+  text-decoration: none;
+  position: relative;
+}
+
+/* Remove the original before pseudo-element */
+.circle-button::before {
+  content: none;
+}
+
+/* Add content for each page */
+body.page1 .circle-button::after {
+  content: "1/6";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Termina", sans-serif;
+  font-weight: 700;
+  color: #EF5C26;
+  font-size: 18px;
+}
+
+body.page2 .circle-button::after {
+  content: "2/6";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Termina", sans-serif;
+  font-weight: 700;
+  color: #EF5C26;
+  font-size: 18px;
+}
+
+body.page3 .circle-button::after {
+  content: "3/6";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Termina", sans-serif;
+  font-weight: 700;
+  color: #EF5C26;
+  font-size: 18px;
+}
+
+body.page4 .circle-button::after {
+  content: "4/6";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Termina", sans-serif;
+  font-weight: 700;
+  color: #EF5C26;
+  font-size: 18px;
+}
+
+body.page5 .circle-button::after {
+  content: "5/6";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Termina", sans-serif;
+  font-weight: 700;
+  color: #EF5C26;
+  font-size: 18px;
+}
+
+body.page6 .circle-button::after {
+  content: "6/6";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Termina", sans-serif;
+  font-weight: 700;
+  color: #EF5C26;
+  font-size: 18px;
+}
+
+/* For about page, use Nike logo image */
+body.about-page .circle-button {
+  background-image: url('logo.png');
+  background-size: 60%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+body.about-page .circle-button::after {
+  content: none;
+}
+
 .enter-button {
   background-color: #EFBD06;
   border: 1px solid black;
@@ -114,10 +225,9 @@ button,
   cursor: none;
 }
 
-/* Hover Effects */
+/* Hover Effects - removed for circle-button */
 .enter-button:hover,
-button:hover,
-.circle-button:hover,
+button:hover:not(.circle-button),
 .arrow-button:hover,
 .about-button:hover {
   transform: scale(1.05);
@@ -145,23 +255,6 @@ header {
   display: flex;
   gap: 10px;
   flex-wrap: nowrap;
-}
-
-.circle-button {
-  position: relative;
-}
-
-.circle-button::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  width: 22px;
-  height: 22px;
-  background-color: #EF5C26;
-  border: 1px solid black;
-  border-radius: 50%;
-  transform: translateY(-50%);
 }
 
 /* -------------------- CUSTOM CURSOR -------------------- */
@@ -235,12 +328,6 @@ body.page3 header {
   border-bottom: none;
 }
 
-body.page3 .circle-button::before {
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
 /* -------------------- RESPONSIVE -------------------- */
 @media (max-width: 1024px) {
   .quote {
@@ -257,11 +344,14 @@ body.page3 .circle-button::before {
     height: 54px;
     font-size: 15px;
   }
-
-  .circle-button::before {
-    width: 18px;
-    height: 18px;
-    right: 14px;
+  
+  body.page1 .circle-button::after,
+  body.page2 .circle-button::after,
+  body.page3 .circle-button::after,
+  body.page4 .circle-button::after,
+  body.page5 .circle-button::after,
+  body.page6 .circle-button::after {
+    font-size: 16px;
   }
   
   .main-quote {
@@ -292,11 +382,18 @@ body.page3 .circle-button::before {
     height: 45px;
     font-size: 14px;
   }
-
-  .circle-button::before {
-    width: 16px;
-    height: 16px;
-    right: 12px;
+  
+  body.page1 .circle-button::after,
+  body.page2 .circle-button::after,
+  body.page3 .circle-button::after,
+  body.page4 .circle-button::after,
+  body.page5 .circle-button::after,
+  body.page6 .circle-button::after {
+    font-size: 14px;
+  }
+  
+  body.about-page .circle-button {
+    background-size: 50%;
   }
   
   .page3-wrapper {
