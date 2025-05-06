@@ -201,7 +201,7 @@ body.page6 .circle-button::after {
 
 /* For about page, use Nike logo image */
 body.about-page .circle-button {
-  background-image: url('logo.png');
+  background-image: url('/img/logo.png');
   background-size: 60%;
   background-position: center;
   background-repeat: no-repeat;
