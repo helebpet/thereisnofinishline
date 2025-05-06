@@ -1,4 +1,4 @@
-let bgImage;
+let bgImage, bgImageMobile;
 let canvasReady = false;
 let imagesLoaded = 0;
 let activeQuoteIndex = 0;
@@ -27,6 +27,7 @@ const quoteText = [
 
 function preload() {
   bgImage = loadImage('img/page1.jpg', imageLoaded, loadError);
+  bgImageMobile = loadImage('img/page1mobile.jpg', imageLoaded, loadError);
 }
 
 function imageLoaded() {
@@ -114,8 +115,11 @@ function draw() {
 }
 
 function drawBackground() {
+  // Select appropriate background image based on device width
+  let bgImageToUse = width <= 768 ? bgImageMobile : bgImage;
+  
   // Enlarge background to prevent white edges when rotating
-  let aspectRatio = bgImage.width / bgImage.height;
+  let aspectRatio = bgImageToUse.width / bgImageToUse.height;
   let canvasRatio = width / height;
   let drawWidth, drawHeight;
   
@@ -133,7 +137,7 @@ function drawBackground() {
   let offsetX = (width - drawWidth) / 2;
   let offsetY = (height - drawHeight) / 2;
 
-  image(bgImage, offsetX, offsetY, drawWidth, drawHeight);
+  image(bgImageToUse, offsetX, offsetY, drawWidth, drawHeight);
 }
 
 function drawGradientLines() {
@@ -220,7 +224,7 @@ function createDomQuote() {
   h1.parent(container);
   h1.style('color', '#FCFCEC');
   h1.style('font-size', 'clamp(3rem, 7vw, 6rem)');
-  h1.style('line-height', '1.2');
+  h1.style('line-height', '1.1'); // Decreased line height for the title as requested
   h1.style('font-weight', '900');
   h1.style('margin-bottom', '0.7em'); // Reduced bottom margin to move text up
   h1.style('transition', 'opacity 0.5s ease, transform 0.5s ease');
@@ -234,6 +238,7 @@ function createDomQuote() {
   textContainer.style('scrollbar-width', 'thin');
   textContainer.style('scrollbar-color', '#FCFCEC rgba(252, 252, 236, 0.2)');
   textContainer.style('padding-right', '20px');
+  textContainer.style('padding', '15px'); // Added padding inside the scrolling area to prevent cut-off on hover
   
   // Custom scrollbar styling
   const scrollbarStyle = document.createElement('style');
@@ -260,10 +265,11 @@ function createDomQuote() {
     p.style('color', '#FCFCEC');
     p.style('font-weight', '600');
     p.style('font-size', 'clamp(1.2rem, 2.5vw, 2rem)');
-    p.style('line-height', '1.6');
-    p.style('letter-spacing', '-0.11em');
+    p.style('line-height', '1.6'); // Set line height to 1.6 as requested
+    p.style('letter-spacing', '-0.11em'); // Set letter spacing as requested
+    p.style('word-spacing', '0.15em'); // Add larger spaces between words
     p.style('text-align', 'left');
-    p.style('margin-bottom', '1.5rem');
+    p.style('margin-bottom', '1.6rem'); // Set paragraph spacing to match line height (1.6)
     p.style('opacity', '0'); // Start invisible
     p.style('transform', 'translateY(15px)');
     p.style('transition', 'opacity 0.8s ease, transform 0.8s ease');
@@ -457,6 +463,9 @@ window.addEventListener('deviceorientation', (event) => {
 // Update on window resize
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  
+  // Re-check which background image to use
+  drawBackground();
 }
 
 // Add scroll navigation with smooth animation
