@@ -133,10 +133,10 @@ body.page1 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina", sans-serif;
-  font-weight: 700;
-  color: #EF5C26;
-  font-size: 18px;
+  font-family: "Termina ExtraLight", sans-serif;
+  font-weight: 200;
+  color: black;
+  font-size: 16px;
 }
 
 body.page2 .circle-button::after {
@@ -145,10 +145,10 @@ body.page2 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina", sans-serif;
-  font-weight: 700;
-  color: #EF5C26;
-  font-size: 18px;
+  font-family: "Termina ExtraLight", sans-serif;
+  font-weight: 200;
+  color: black;
+  font-size: 16px;
 }
 
 body.page3 .circle-button::after {
@@ -157,10 +157,10 @@ body.page3 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina", sans-serif;
-  font-weight: 700;
-  color: #EF5C26;
-  font-size: 18px;
+  font-family: "Termina ExtraLight", sans-serif;
+  font-weight: 200;
+  color: black;
+  font-size: 16px;
 }
 
 body.page4 .circle-button::after {
@@ -169,10 +169,10 @@ body.page4 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina", sans-serif;
-  font-weight: 700;
-  color: #EF5C26;
-  font-size: 18px;
+  font-family: "Termina ExtraLight", sans-serif;
+  font-weight: 200;
+  color: black;
+  font-size: 16px;
 }
 
 body.page5 .circle-button::after {
@@ -181,10 +181,10 @@ body.page5 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina", sans-serif;
-  font-weight: 700;
-  color: #EF5C26;
-  font-size: 18px;
+  font-family: "Termina ExtraLight", sans-serif;
+  font-weight: 200;
+  color: black;
+  font-size: 16px;
 }
 
 body.page6 .circle-button::after {
@@ -193,10 +193,10 @@ body.page6 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina", sans-serif;
-  font-weight: 700;
-  color: #EF5C26;
-  font-size: 18px;
+  font-family: "Termina ExtraLight", sans-serif;
+  font-weight: 200;
+  color: black;
+  font-size: 16px;
 }
 
 /* For about page, use Nike logo image */
@@ -351,7 +351,7 @@ body.page3 header {
   body.page4 .circle-button::after,
   body.page5 .circle-button::after,
   body.page6 .circle-button::after {
-    font-size: 16px;
+    font-size: 15px;
   }
   
   .main-quote {
