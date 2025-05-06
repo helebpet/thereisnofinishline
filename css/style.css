@@ -236,16 +236,15 @@ button:hover:not(.circle-button),
   text-decoration: none;
 }
 
-body.about-page .circle-button {
+body.about-page .about-button {
   background-color: #04AD74; /* Change from yellow to green when on about page */
-  background-image: url('/img/logo.png');
   background-size: 40%;
   background-position: center;
   background-repeat: no-repeat;
   border: 1px solid black; /* Keep the border */
 }
 
-body.about-page .about-button {
+body.about-page .about-button:hover  {
   background-color: #04AD74; /* Change from yellow to green when on about page */
   background-size: 40%;
   background-position: center;
