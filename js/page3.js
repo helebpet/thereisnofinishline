@@ -11,7 +11,6 @@ let easing = 0.05;
 let sunX, sunY;
 let sunTargetY;
 let sunRadius;
-let sunColor = '#EF5C26';
 
 const quoteText = [
   "Some call it EUPHORIA,",
@@ -23,7 +22,6 @@ const quoteText = [
 
 let imagesLoaded = 0;
 
-// --- New Variables for dynamic movement ---
 let euphoriaTargetOffsetX = 0;
 let euphoriaOffsetX = 0;
 let revealOffsets = [];
@@ -105,14 +103,10 @@ function drawBackground() {
   image(bgImage, offsetX, offsetY, drawWidth, drawHeight);
 }
 
+// ⬛️ Black horizontal lines
 function drawGradientLines() {
-  let startColor = color('#EF5C26');
-  let endColor = color('#D7DA1B');
-  let interColor = lerpColor(startColor, endColor, map(mouseX, 0, width, 0, 1));
-
-  stroke(interColor);
+  stroke(0); // black lines
   strokeWeight(1);
-
   for (let y = 0; y < height; y += 10) {
     line(0, y, width, y);
   }
@@ -130,21 +124,34 @@ function updateSun() {
   sunY += (sunTargetY - sunY) * easing;
 }
 
+// ☀️ Radial gradient sun with black outline
 function drawSun() {
+  let innerColor = color('#D7DA1B');
+  let outerColor = color('#EF5C26');
+  let steps = 100;
+
+  noStroke();
+  for (let r = sunRadius; r > 0; r -= sunRadius / steps) {
+    let inter = map(r, 0, sunRadius, 0, 1);
+    fill(lerpColor(innerColor, outerColor, inter));
+    ellipse(sunX, sunY, r * 2, r * 2);
+  }
+
+  // Outline
+  noFill();
   stroke(0);
   strokeWeight(1);
-  fill(sunColor);
-  ellipse(sunX, sunY, sunRadius, sunRadius);
+  ellipse(sunX, sunY, sunRadius * 2, sunRadius * 2);
 }
 
-// --- UPDATED drawText() with text moved up ---
+// ✍️ Dynamic quote text
 function drawText() {
   targetX = mouseX;
 
   if (windowWidth <= 768) {
     targetY = height / 2.3;
   } else {
-    targetY = height / 2.1; // mírně výš
+    targetY = height / 2.1;
   }
 
   quoteX += (targetX - quoteX) * easing;
@@ -155,11 +162,11 @@ function drawText() {
   textAlign(CENTER, CENTER);
   textFont('Termina');
 
-  let fontSize = windowWidth / 45; // menší text
+  let fontSize = windowWidth / 45;
   textSize(fontSize);
   textStyle(BOLD);
 
-  let lineHeight = fontSize * 1.15; // menší mezera mezi řádky
+  let lineHeight = fontSize * 1.15;
 
   let centerThreshold = width * 0.3;
   if (mouseX > width / 2 + centerThreshold) {
@@ -182,14 +189,14 @@ function drawText() {
   }
 }
 
-
-
+// 🖱️ Custom cursor movement
 function updateCursor() {
   if (cursorDiv) {
     cursorDiv.position(mouseX, mouseY);
   }
 }
 
+// 📐 Responsive canvas + sun sizing
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   timeX = width / 4;
@@ -201,6 +208,7 @@ function windowResized() {
   updateSunSize();
 }
 
+// ☀️ Smaller, responsive sun
 function updateSunSize() {
-  sunRadius = width * 0.5;
+  sunRadius = width * 0.25; 
 }
