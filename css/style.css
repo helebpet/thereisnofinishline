@@ -92,7 +92,7 @@ button,
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Termina ExtraLight", sans-serif;
+  font-family: "Termina", sans-serif;
   font-weight: 200;
   white-space: nowrap;
   text-align: center;
@@ -113,7 +113,7 @@ button,
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Termina ExtraLight", sans-serif;
+  font-family: "Termina", sans-serif;
   font-weight: 200;
   white-space: nowrap;
   text-align: center;
@@ -133,7 +133,7 @@ body.page1 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina ExtraLight", sans-serif;
+  font-family: "Termina", sans-serif;
   font-weight: 200;
   color: black;
   font-size: 16px;
@@ -145,7 +145,7 @@ body.page2 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina ExtraLight", sans-serif;
+  font-family: "Termina", sans-serif;
   font-weight: 200;
   color: black;
   font-size: 16px;
@@ -157,7 +157,7 @@ body.page3 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina ExtraLight", sans-serif;
+  font-family: "Termina", sans-serif;
   font-weight: 200;
   color: black;
   font-size: 16px;
@@ -169,7 +169,7 @@ body.page4 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina ExtraLight", sans-serif;
+  font-family: "Termina", sans-serif;
   font-weight: 200;
   color: black;
   font-size: 16px;
@@ -181,7 +181,7 @@ body.page5 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina ExtraLight", sans-serif;
+  font-family: "Termina", sans-serif;
   font-weight: 200;
   color: black;
   font-size: 16px;
@@ -193,7 +193,7 @@ body.page6 .circle-button::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: "Termina ExtraLight", sans-serif;
+  font-family: "Termina", sans-serif;
   font-weight: 200;
   color: black;
   font-size: 16px;
