@@ -213,32 +213,31 @@ class Particle {
 function createDomQuote() {
   const container = createDiv().id('quote-container');
   container.style('position', 'absolute');
-  container.style('top', '15%'); // Moved down from 10% to 15%
+  container.style('top', '15%');
   container.style('left', '10%');
   container.style('max-width', '80%');
   container.style('font-family', 'Termina, sans-serif');
   container.style('z-index', '10');
   
-  // Title (first quote)
+  // Title (first quote) - ONLY ONCE
   const h1 = createElement('h1', quoteText[0]);
   h1.parent(container);
   h1.style('color', '#FCFCEC');
   h1.style('font-size', 'clamp(3rem, 7vw, 6rem)');
-  h1.style('line-height', '1.1'); // Decreased line height for the title as requested
+  h1.style('line-height', '1.1'); // Decreased line height for the title
   h1.style('font-weight', '900');
-  h1.style('margin-bottom', '0.7em'); // Reduced bottom margin to move text up
+  h1.style('margin-bottom', '0.7em');
   h1.style('transition', 'opacity 0.5s ease, transform 0.5s ease');
-  h1.id('main-title'); // Add ID for targeting the title
+  h1.id('main-title');
   
-  // Create scrollable container for all quotes
+  // Create scrollable container for quotes (not including the title)
   const textContainer = createDiv().id('text-container');
   textContainer.parent(container);
-  textContainer.style('max-height', '40vh'); // Reduced height from 50vh to 40vh
+  textContainer.style('max-height', '40vh');
   textContainer.style('overflow-y', 'auto');
   textContainer.style('scrollbar-width', 'thin');
   textContainer.style('scrollbar-color', '#FCFCEC rgba(252, 252, 236, 0.2)');
-  textContainer.style('padding-right', '20px');
-  textContainer.style('padding', '15px'); // Added padding inside the scrolling area to prevent cut-off on hover
+  textContainer.style('padding', '15px'); // Added padding inside the scrolling area
   
   // Custom scrollbar styling
   const scrollbarStyle = document.createElement('style');
@@ -256,27 +255,26 @@ function createDomQuote() {
   `;
   document.head.appendChild(scrollbarStyle);
   
-  // We don't need the title in the scrollable area anymore
-  
-  // Create all paragraph elements in one scrollable view
+  // Create paragraphs starting from index 1 (skip the title)
   for (let i = 1; i < quoteText.length; i++) {
     const p = createElement('p', quoteText[i]);
     p.parent(textContainer);
     p.style('color', '#FCFCEC');
     p.style('font-weight', '600');
     p.style('font-size', 'clamp(1.2rem, 2.5vw, 2rem)');
-    p.style('line-height', '1.6'); // Set line height to 1.6 as requested
-    p.style('letter-spacing', '-0.11em'); // Set letter spacing as requested
-    p.style('word-spacing', '0.15em'); // Add larger spaces between words
+    p.style('line-height', '1.6');
+    p.style('letter-spacing', '-0.11em');
+    p.style('word-spacing', '0.15em');
     p.style('text-align', 'left');
-    p.style('margin-bottom', '1.6rem'); // Set paragraph spacing to match line height (1.6)
+    p.style('margin-bottom', '0'); // No extra paragraph spacing
+    p.style('padding-bottom', '0');
     p.style('opacity', '0'); // Start invisible
     p.style('transform', 'translateY(15px)');
     p.style('transition', 'opacity 0.8s ease, transform 0.8s ease');
     p.class('quote-paragraph');
     p.attribute('data-index', i);
     
-    // Simple hover effect - only change opacity without scaling
+    // Simple hover effect
     p.mouseOver(() => {
       p.style('opacity', '1');
     });
@@ -286,7 +284,7 @@ function createDomQuote() {
     });
   }
   
-  // Add indicator to encourage scrolling
+  // Add scroll indicator
   const scrollIndicator = createDiv().id('scroll-indicator');
   scrollIndicator.parent(container);
   scrollIndicator.style('margin-top', '10px');
@@ -346,8 +344,6 @@ function createDomQuote() {
       activeQuoteIndex = mostVisibleIndex;
     }
   });
-  
-  // Removed "Back to Top" button
 }
 
 // Helper function to calculate how visible an element is in the viewport
