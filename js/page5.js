@@ -8,6 +8,11 @@ let quoteX, quoteY;
 let targetX, targetY;
 let easing = 0.05;
 
+// Text elements
+let quoteContainer;
+let quoteElements = [];
+let typewriterElement;
+
 const quoteText = [
   "The  EXPERIENCE  is  UNIQUE",
   "to  each  of  us,",
@@ -38,12 +43,69 @@ function imageLoaded() {
     console.log("Image loaded successfully.");
     canvasReady = true;
     select('#loader').hide();
+    createTextElements();
     typewriterStartTime = millis() + typewriterDelay;
   }
 }
 
 function loadError(err) {
   console.error("Image failed to load:", err);
+}
+
+function createTextElements() {
+  // Create a container for all text elements
+  quoteContainer = createDiv();
+  quoteContainer.class('quote-container');
+  quoteContainer.position(0, 0);
+  quoteContainer.style('position', 'absolute');
+  quoteContainer.style('width', '100%');
+  quoteContainer.style('height', '100%');
+  quoteContainer.style('pointer-events', 'none'); // Make it non-interactive
+  quoteContainer.style('display', 'flex');
+  quoteContainer.style('flex-direction', 'column');
+  quoteContainer.style('align-items', 'center');
+  quoteContainer.style('justify-content', 'center');
+  
+  // Create paragraph elements for each line of quote text
+  for (let i = 0; i < quoteText.length; i++) {
+    let textP = createP(quoteText[i]);
+    textP.parent(quoteContainer);
+    textP.class('quote-line');
+    
+    // Apply the styling you requested
+    textP.style('font-weight', '600');
+    textP.style('font-size', 'clamp(1.2rem, 2.5vw, 2rem)');
+    textP.style('line-height', '1.6');
+    textP.style('letter-spacing', '-0.11em');
+    textP.style('word-spacing', '0.15em');
+    
+    // Additional styling
+    textP.style('color', '#FCFCEC');
+    textP.style('font-family', 'Termina, sans-serif');
+    textP.style('margin', '0');
+    textP.style('padding', '0');
+    textP.style('transform-origin', 'center');
+    
+    quoteElements.push(textP);
+  }
+  
+  // Create the typewriter element
+  typewriterElement = createP('');
+  typewriterElement.parent(quoteContainer);
+  typewriterElement.class('typewriter-text');
+  
+  // Apply the styling you requested
+  typewriterElement.style('font-weight', '600');
+  typewriterElement.style('font-size', 'clamp(1.2rem, 2.5vw, 2rem)');
+  typewriterElement.style('line-height', '1.6');
+  typewriterElement.style('letter-spacing', '-0.11em');
+  typewriterElement.style('word-spacing', '0.15em');
+  
+  // Additional styling
+  typewriterElement.style('color', '#FCFCEC');
+  typewriterElement.style('font-family', 'Termina, sans-serif');
+  typewriterElement.style('margin', '0');
+  typewriterElement.style('padding', '0');
 }
 
 function setup() {
@@ -70,7 +132,8 @@ function draw() {
 
   drawBackground();
   drawGradientLines();
-  drawText();
+  updateTextPositions();
+  updateTypewriter();
   updateCursor();
 }
 
@@ -103,7 +166,9 @@ function drawGradientLines() {
   }
 }
 
-function drawText() {
+function updateTextPositions() {
+  if (!quoteElements.length) return;
+
   targetX = mouseX;
 
   // Adjusted Y positioning to move the text a bit lower
@@ -116,63 +181,34 @@ function drawText() {
   quoteX += (targetX - quoteX) * easing;
   quoteY += (targetY - quoteY) * easing;
 
-  noStroke();
-  fill('#FCFCEC');
-  textAlign(LEFT, CENTER);
-  textFont('Termina');
-  textSize(windowWidth / 30);
-  textStyle(BOLD);
+  // Update the container position
+  quoteContainer.style('transform', `translate(${quoteX - windowWidth/2}px, ${quoteY - windowHeight/2}px)`);
 
-  let fontSize = windowWidth / 30;
-  let lineHeight = windowWidth / 20;
-  let letterSpacing = -0.11 * fontSize;
-
-  for (let i = 0; i < quoteText.length; i++) {
-    let line = quoteText[i];
+  // Update each line position with the wave effect
+  for (let i = 0; i < quoteElements.length; i++) {
     let direction = i % 2 === 0 ? 1 : -1;
     let offsetX = direction * sin(frameCount * 0.02 + i) * 20;
-
-    let x = quoteX + offsetX;
-    let y = quoteY + (i - quoteText.length / 2) * lineHeight;
-
-    let charX = x;
-    for (let c = 0; c < line.length; c++) {
-      text(line[c], charX, y);
-      charX += textWidth(line[c]) + letterSpacing;
-    }
-  }
-
-  // Start typewriter effect after delay
-  if (millis() > typewriterStartTime) {
-    drawTypewriterEffect(quoteY + (quoteText.length / 2) * lineHeight, fontSize, letterSpacing);
+    
+    quoteElements[i].style('transform', `translateX(${offsetX}px)`);
   }
 }
 
-function drawTypewriterEffect(yPosition, fontSize, letterSpacing) {
-  if (!typewriterStarted) {
-    typewriterStarted = true;
-    lastTypeTime = millis();
-  }
+function updateTypewriter() {
+  // Start typewriter effect after delay
+  if (millis() > typewriterStartTime) {
+    if (!typewriterStarted) {
+      typewriterStarted = true;
+      lastTypeTime = millis();
+    }
 
-  let currentTime = millis();
-  if (currentTime - lastTypeTime > typeSpeed && typedLength < typewriterText.length) {
-    typedLength++;
-    lastTypeTime = currentTime;
-  }
+    let currentTime = millis();
+    if (currentTime - lastTypeTime > typeSpeed && typedLength < typewriterText.length) {
+      typedLength++;
+      lastTypeTime = currentTime;
+    }
 
-  let displayText = typewriterText.substring(0, typedLength);
-
-  fill('#FCFCEC');
-  noStroke();
-  textAlign(LEFT, CENTER);
-  textFont('Termina');
-  textSize(fontSize);
-  textStyle(BOLD);
-
-  let charX = quoteX;
-  for (let c = 0; c < displayText.length; c++) {
-    text(displayText[c], charX, yPosition);
-    charX += textWidth(displayText[c]) + letterSpacing;
+    let displayText = typewriterText.substring(0, typedLength);
+    typewriterElement.html(displayText);
   }
 }
 
