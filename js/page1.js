@@ -1,15 +1,74 @@
-let bgImage, bgImageMobile;
+// Function to handle clicking on the stopwatch
+function handleStopwatchClick() {
+  // Calculate distance from mouse to stopwatch center (accounting for hover growth)
+  // This allows clicks to be detected on the enlarged stopwatch
+  let hoverRadius = stopwatchSize/2 * hoverGrowth;
+  
+  // Check if click is within the main stopwatch body (adjusted for hover size)
+  if (dist(mouseX, mouseY, stopwatchX, stopwatchY) <= hoverRadius) {
+    // Start/stop the stopwatch when the main body is clicked
+    toggleStopwatch();
+    return;
+  }
+  
+  // Check if top button was clicked (reset) - adjust for hover scaling
+  let topButtonX = stopwatchX;
+  let topButtonY = stopwatchY - (stopwatchSize/2 + 10) * hoverGrowth;
+  if (dist(mouseX, mouseY, topButtonX, topButtonY) <= 10 * hoverGrowth) {
+    resetStopwatch();
+    return;
+  }
+  
+  // Check if side button was clicked (lap/split - not implemented) - adjust for hover scaling
+  let sideButtonX = stopwatchX + (stopwatchSize/2 + 5) * hoverGrowth;
+  let sideButtonY = stopwatchY - (stopwatchSize/6) * hoverGrowth;
+  if (dist(mouseX, mouseY, sideButtonX, sideButtonY) <= 7.5 * hoverGrowth) {
+    // Lap functionality could be added here
+    return;
+  }
+}
+
+// Toggle stopwatch between running and paused
+function toggleStopwatch() {
+  if (isRunning) {
+    // Pause the stopwatch
+    isRunning = false;
+    pausedTime = elapsedTime;
+  } else {
+    // Start/resume the stopwatch
+    isRunning = true;
+    startTime = millis();
+  }
+}
+
+// Reset the stopwatch
+function resetStopwatch() {
+  isRunning = false;
+  elapsedTime = 0;
+  pausedTime = 0;
+  startTime = null;
+}let bgImage, bgImageMobile;
 let cursorDiv;
 let canvasReady = false;
 let currentLine = 0;
 let lineProgress = 0;
 
-// Variables for the bouncing stopwatch
+// Variables for the bouncing digital stopwatch
 let stopwatchX, stopwatchY;
 let stopwatchSpeedX = 2;
 let stopwatchSpeedY = 1.5;
-let stopwatchSize = 120; // Size of the stopwatch
+let stopwatchSize = 120; // Base size of the stopwatch
+let currentStopwatchSize = 120; // Current size with hover effect
 let isMobile = false;
+let isHovering = false; // Track if mouse is hovering over stopwatch
+let hoverGrowth = 1.0; // Current scale factor for hover effect
+const MAX_HOVER_GROWTH = 1.15; // Maximum growth when hovering (15% larger)
+
+// Variables for tracking time
+let startTime;
+let elapsedTime = 0;
+let isRunning = false; // Track if stopwatch is running
+let pausedTime = 0; // Time accumulated before pause
 
 function preload() {
   // Load both images
@@ -27,6 +86,10 @@ function imageLoaded() {
     console.log("All images loaded successfully.");
     canvasReady = true;
     select('#loader').hide(); // hide loading screen
+    
+    // Initialize time variables but don't start automatically
+    startTime = null;
+    elapsedTime = 0;
   }
 }
 
@@ -50,6 +113,9 @@ function setup() {
   // Initialize stopwatch position
   stopwatchX = width / 4;
   stopwatchY = height / 4;
+  
+  // Add mouse pressed event for stopwatch control
+  cnv.mousePressed(handleStopwatchClick);
 }
 
 function checkDevice() {
@@ -90,7 +156,7 @@ function draw() {
   
   image(currentBg, offsetX, offsetY, drawWidth, drawHeight);
   
-  // Draw animated black lines (changed from lime-green to black)
+  // Draw animated black lines
   stroke(0);
   strokeWeight(1);
   for (let y = 0; y < currentLine * 10; y += 10) {
@@ -112,12 +178,31 @@ function draw() {
     cursorDiv.position(mouseX, mouseY);
   }
   
+  // Update elapsed time
+  if (isRunning && startTime) {
+    elapsedTime = pausedTime + (millis() - startTime);
+  }
+  
+  // Check if mouse is hovering over stopwatch
+  let mouseDistToStopwatch = dist(mouseX, mouseY, stopwatchX, stopwatchY);
+  isHovering = mouseDistToStopwatch < stopwatchSize / 2 * hoverGrowth;
+  
+  // Update hover growth animation
+  if (isHovering && hoverGrowth < MAX_HOVER_GROWTH) {
+    hoverGrowth += 0.01; // Gradually grow
+  } else if (!isHovering && hoverGrowth > 1.0) {
+    hoverGrowth -= 0.01; // Gradually shrink back
+  }
+  
+  // Calculate current size with hover effect
+  currentStopwatchSize = stopwatchSize * hoverGrowth;
+  
   // Move the stopwatch display
   stopwatchX += stopwatchSpeedX;
   stopwatchY += stopwatchSpeedY;
   
   // Simple boundary checking for stopwatch
-  let padding = stopwatchSize / 2 + 10; // Add padding based on stopwatch size
+  let padding = currentStopwatchSize / 2 + 10; // Add padding based on current stopwatch size
   
   // Bounce off edges
   if (stopwatchX < padding || stopwatchX > width - padding) {
@@ -134,40 +219,48 @@ function draw() {
     if (stopwatchY > height - padding) stopwatchY = height - padding;
   }
   
-  // Draw stopwatch
-  drawStopwatch();
+  // Draw digital stopwatch
+  drawDigitalStopwatch();
 }
 
-function drawStopwatch() {
+function drawDigitalStopwatch() {
   push();
   translate(stopwatchX, stopwatchY);
   
+  // Apply hover scale effect
+  scale(hoverGrowth);
+  
+  // Calculate button positions for click detection later
+  let topButtonX = 0;
+  let topButtonY = -stopwatchSize/2 - 10;
+  let sideButtonX = stopwatchSize/2 + 5;
+  let sideButtonY = -stopwatchSize/6;
+  
   // Draw buttons first (behind the main watch face)
-  // Draw stopwatch button (now orange with outline)
-  stroke('#EF5C26'); // Orange outline
+  // Draw stopwatch button with black outline
+  stroke(0); // Black outline
   strokeWeight(1);
   fill('#EF5C26'); // Orange fill
-  ellipse(0, -stopwatchSize/2 - 10, 20, 20);
+  ellipse(topButtonX, topButtonY, 20, 20);
   
-  // Draw side button (now orange with outline)
-  stroke('#EF5C26'); // Orange outline
+  // Draw side button with black outline
+  stroke(0); // Black outline
   strokeWeight(1);
   fill('#EF5C26'); // Orange fill
-  ellipse(stopwatchSize/2 + 5, -stopwatchSize/6, 15, 15);
+  ellipse(sideButtonX, sideButtonY, 15, 15);
   
-  // Create gradient for stopwatch body
-  let from = color('#FCFCEC'); // Cream color
-  let to = color('#D7DA1B');   // Lime-yellow color
-  
-  // Draw stopwatch face with gradient
-  noStroke();
-  
-  // Outer circle now green (matching text color)
+  // Draw 1px black outline for the stopwatch
+  stroke(0);
+  strokeWeight(1);
   fill('#04AD74');
   ellipse(0, 0, stopwatchSize + 20, stopwatchSize + 20);
   
-  // Draw main face with gradient (cream to lime)
-  // Since p5.js doesn't have built-in radial gradients, we'll simulate one with concentric circles
+  // Create gradient for stopwatch body - similar to original
+  let from = color('#FCFCEC'); // Cream color
+  let to = color('#D7DA1B');   // Lime-yellow color
+  
+  // Main stopwatch face with gradient (cream to lime) - like original
+  noStroke();
   for (let i = stopwatchSize; i > 0; i -= 2) {
     let inter = map(i, 0, stopwatchSize, 0, 1);
     let c = lerpColor(from, to, inter);
@@ -175,57 +268,54 @@ function drawStopwatch() {
     ellipse(0, 0, i, i);
   }
   
-  // Draw tick marks
-  stroke('#04AD74'); // Teal color for ticks
-  strokeWeight(1.5);
-  for (let i = 0; i < 60; i++) {
-    let angle = map(i, 0, 60, 0, TWO_PI) - HALF_PI;
-    let tickLength = i % 5 === 0 ? 10 : 5; // Longer ticks for every 5 seconds
-    
-    let x1 = (stopwatchSize/2 - 5) * cos(angle);
-    let y1 = (stopwatchSize/2 - 5) * sin(angle);
-    let x2 = (stopwatchSize/2 - tickLength - 5) * cos(angle);
-    let y2 = (stopwatchSize/2 - tickLength - 5) * sin(angle);
-    
-    line(x1, y1, x2, y2);
-    
-    // Add numbers for the main 5-second intervals
-    if (i % 5 === 0) {
-      push();
-      noStroke();
-      fill('#04AD74'); // Teal color for numbers
-      textSize(8);
-      textAlign(CENTER, CENTER);
-      textFont('Termina');
-      
-      // Position for the numbers (slightly inward from the tick marks)
-      let textX = (stopwatchSize/2 - 24) * cos(angle);
-      let textY = (stopwatchSize/2 - 24) * sin(angle);
-      
-      // Draw the second number
-      text(i, textX, textY);
-      pop();
+  // Format the time
+  let totalSeconds = Math.floor(elapsedTime / 1000);
+  let minutes = Math.floor(totalSeconds / 60);
+  let seconds = totalSeconds % 60;
+  let milliseconds = Math.floor((elapsedTime % 1000) / 10); // Get hundredths of seconds
+  
+  // Format as MM:SS:cc (cc = centiseconds)
+  let timeString = nf(minutes, 2) + ":" + nf(seconds, 2) + ":" + nf(milliseconds, 2);
+  
+  // Draw digital display with teal background
+  fill('#04AD74'); // Teal background for the digital screen
+  stroke(0);
+  strokeWeight(1);
+  rectMode(CENTER);
+  let displayWidth = stopwatchSize * 0.7;
+  let displayHeight = stopwatchSize * 0.3;
+  rect(0, 0, displayWidth, displayHeight, 5);
+  
+  // Draw time text - made bold with weight 700
+  noStroke();
+  fill('#FCFCEC'); // Cream color for text
+  textAlign(CENTER, CENTER);
+  
+  // Calculate optimal font size to fit the display
+  // Make font size smaller to ensure it always fits
+  let fontSize = min(displayHeight * 0.6, displayWidth / timeString.length * 1.2);
+  
+  // Apply bold font weight (700)
+  textFont('Termina', fontSize);
+  textStyle(BOLD); // Apply bold style
+  text(timeString, 0, 0);
+  
+  // Add action label text based on stopwatch state
+  let labelText = "START"; // Default text when not started
+  
+  if (startTime !== null) {
+    if (isRunning) {
+      labelText = "STOP"; // Text when stopwatch is running
+    } else {
+      labelText = "RESUME"; // Text when stopwatch is paused
     }
   }
   
-  // Get current seconds and milliseconds for ultra-smooth hand movement
-  // Use frameCount for continuous smooth movement without ticking
-  let currentTime = millis() / 1000; // Get current time in seconds (including fractions)
-  let smoothSeconds = currentTime % 60; // Get just the seconds part (0-60)
-  
-  // Calculate angle for seconds hand
-  let secondsAngle = map(smoothSeconds, 0, 60, 0, TWO_PI) - HALF_PI;
-  
-  // Draw seconds hand with teal color
-  stroke('#04AD74');
-  strokeWeight(2.5);
-  let handLength = stopwatchSize/2 - 15;
-  line(0, 0, handLength * cos(secondsAngle), handLength * sin(secondsAngle));
-  
-  // Draw center pin
-  fill('#04AD74');
-  noStroke();
-  ellipse(0, 0, 8, 8);
+  // Draw the label text above the digital display
+  fill('#04AD74'); // Teal color for text
+  textStyle(BOLD);
+  textFont('Termina', stopwatchSize * 0.08);
+  text(labelText, 0, -stopwatchSize * 0.22);
   
   pop();
 }
