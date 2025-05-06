@@ -26,7 +26,7 @@ function setup() {
   textP.style('padding-bottom', '0');
   
   // Position the text lower on the screen
-  textP.position(windowWidth * 0.1, windowHeight * 0.25);
+  textP.position(windowWidth * 0.1, windowHeight * 0.2); // Moved up from 0.25 to 0.2
   textP.style('color', '#04AD74'); // Dark green text to match the theme
   textP.style('z-index', '20'); // Above the canvas
   textP.style('max-width', '80%'); // Limit width
@@ -47,13 +47,13 @@ function checkDevice() {
 function draw() {
   if (!canvasReady) return;
   
-  clear(); // Clear the canvas to make any HTML text visible
+  // Clear with RGBA to ensure true transparency
+  clear();
+  background(255, 255, 255, 0);
   
   // Create interactive gradient background - transparent top to cream bottom
   const color2 = color('#FCFCEC'); // Light cream color
   const transparentColor = color(255, 255, 255, 0); // Transparent
-  const lerpAmt = map(mouseY, 0, height, 0, 1);
-  const lerpedColor = lerpColor(transparentColor, color2, lerpAmt);
   
   // Apply gradient background
   const grad = drawingContext.createLinearGradient(0, 0, 0, height);
@@ -78,7 +78,7 @@ function draw() {
   stroke(lineColor);
   strokeWeight(strokeWeightFactor);
   
-  // Draw horizontal lines
+  // Only draw the colorful wavy lines, no white lines
   for (let y = startY; y <= endY; y += lineGap) {
     // Add subtle wave effect based on mouseX
     let waveAmplitude = map(mouseY, 0, height, 0, 20);
