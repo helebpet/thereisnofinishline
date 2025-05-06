@@ -244,13 +244,26 @@ body.about-page .about-button {
   border: 1px solid black; /* Keep the border */
 }
 
-body.about-page .about-button:hover  {
-  background-color: #04AD74; /* Change from yellow to green when on about page */
-  background-size: 40%;
-  background-position: center;
-  background-repeat: no-repeat;
-  border: 1px solid black; /* Keep the border */
+/* Hover Effects - updated to exclude .about-button on about page */
+.enter-button:hover,
+button:hover:not(.circle-button):not(.about-button),
+.arrow-button:hover,
+.about-button:hover:not(body.about-page .about-button) {
+  transform: scale(1.05);
+  background-color: #000;
+  color: #FCFCEC;
+  text-decoration: none;
 }
+
+/* Remove hover effect specifically when on about page */
+body.about-page .about-button:hover {
+  transform: none;
+  background-color: #04AD74;
+  color: black;
+  cursor: default;
+}
+
+
 
 /* -------------------- HEADER -------------------- */
 header {
