@@ -30,7 +30,7 @@ let revealOffsets = [];
 
 function preload() {
   bgImage = loadImage('img/page3.jpg', imageLoaded, loadError);
-  nikeLogoImage = loadImage('../img/nikelogogreen.png', imageLoaded, loadError);
+  nikeLogoImage = loadImage('../nikelogogreen.png', imageLoaded, loadError);
 }
 
 function imageLoaded() {
