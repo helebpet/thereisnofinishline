@@ -333,24 +333,6 @@ body.page2 {
   box-sizing: border-box;
 }
 
-/* Text block */
-.text-block {
-  margin-top: 20px; /* Jemnější mezera */
-  font-weight: 600;
-  width: 100%;
-  max-width: 640px; /* Lehce menší šířka pro lepší čitelnost */
-}
-
-body.page2 .text-block p {
-  color: #04AD74;
-  font-weight: 600;
-  font-size: clamp(1.2rem, 2.5vw, 2rem);
-  line-height: 1.6;
-  letter-spacing: -0.11em; /* Zmenšení rozestupu mezi znaky o 11 % */
-  text-align: left;
-  margin-bottom: 1rem;
-}
-
 /* Header specific styling for page3 */
 body.page3 header {
   background-color: transparent;
