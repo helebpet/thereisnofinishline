@@ -1,4 +1,5 @@
 let bgImage;
+let nikeLogoImage;
 let cursorDiv;
 let canvasReady = false;
 let timeX, timeY;
@@ -8,9 +9,9 @@ let quoteX, quoteY;
 let targetX, targetY;
 let easing = 0.05;
 
-let sunX, sunY;
-let sunTargetY;
-let sunRadius;
+let nikeX, nikeY;
+let nikeTargetY;
+let nikeSize;
 
 const quoteText = [
   "Some call it EUPHORIA,",
@@ -21,6 +22,7 @@ const quoteText = [
 ];
 
 let imagesLoaded = 0;
+const totalImages = 2; // Now loading two images: background and Nike logo
 
 let euphoriaTargetOffsetX = 0;
 let euphoriaOffsetX = 0;
@@ -28,12 +30,13 @@ let revealOffsets = [];
 
 function preload() {
   bgImage = loadImage('img/page3.jpg', imageLoaded, loadError);
+  nikeLogoImage = loadImage('../img/nikelogogreen.png', imageLoaded, loadError);
 }
 
 function imageLoaded() {
   imagesLoaded++;
-  if (imagesLoaded >= 1) {
-    console.log("Image loaded successfully.");
+  if (imagesLoaded >= totalImages) {
+    console.log("All images loaded successfully.");
     canvasReady = true;
     select('#loader').hide();
   }
@@ -56,16 +59,61 @@ function setup() {
   quoteX = width / 2;
   quoteY = height / 2;
 
-  sunX = width / 2;
-  sunY = height / 2;
+  nikeX = width / 2;
+  nikeY = height / 2;
 
-  sunTargetY = sunY;
+  nikeTargetY = nikeY;
 
-  updateSunSize();
+  updateNikeSize();
 
   for (let i = 1; i < quoteText.length; i++) {
     revealOffsets[i] = width;
   }
+  
+  // Create and style the text elements
+  createAndStyleTextElements();
+}
+
+function createAndStyleTextElements() {
+  // Create a container div for text
+  let textContainer = createDiv('');
+  textContainer.id('text-container');
+  textContainer.position(0, 0);
+  textContainer.style('width', '100%');
+  textContainer.style('height', '100%');
+  textContainer.style('position', 'absolute');
+  textContainer.style('display', 'flex');
+  textContainer.style('justify-content', 'center');
+  textContainer.style('align-items', 'center');
+  textContainer.style('pointer-events', 'none');
+  textContainer.style('transition', 'transform 0.8s ease');
+  
+  // Create a single div for all text content
+  let quoteDiv = createDiv('');
+  quoteDiv.class('quote-text');
+  quoteDiv.parent(textContainer);
+  
+  // Apply the requested styling to the div
+  quoteDiv.style('font-weight', '600');
+  quoteDiv.style('font-size', 'clamp(1.2rem, 2.5vw, 2rem)');
+  quoteDiv.style('line-height', '1.6');
+  quoteDiv.style('letter-spacing', '-0.11em');
+  quoteDiv.style('word-spacing', '0.15em');
+  
+  // Additional styling
+  quoteDiv.style('color', '#FCFCEC');
+  quoteDiv.style('font-family', 'Termina, sans-serif');
+  quoteDiv.style('text-align', 'center');
+  quoteDiv.style('transition', 'transform 0.8s ease, opacity 0.8s ease');
+  quoteDiv.style('transform', 'translateX(0)');
+  quoteDiv.style('opacity', '1');
+  
+  // Create the complete text content with line breaks
+  let textContent = '';
+  quoteText.forEach((line, index) => {
+    textContent += line + '<br>';
+  });
+  quoteDiv.html(textContent);
 }
 
 function draw() {
@@ -76,31 +124,38 @@ function draw() {
     cnv.style('display', 'block');
   }
 
+  // Clear the canvas before drawing each frame
+  clear();
+  
   drawBackground();
   drawGradientLines();
-  updateSun();
-  drawSun();
-  drawText();
+  updateNikeLogo();
+  drawNikeLogo();
+  updateDOMText();
   updateCursor();
 }
 
 function drawBackground() {
-  let aspectRatio = bgImage.width / bgImage.height;
-  let canvasRatio = width / height;
-  let drawWidth, drawHeight;
-
-  if (canvasRatio > aspectRatio) {
-    drawWidth = width;
-    drawHeight = width / aspectRatio;
-  } else {
-    drawHeight = height;
-    drawWidth = height * aspectRatio;
-  }
-
-  let offsetX = (width - drawWidth) / 2;
-  let offsetY = (height - drawHeight) / 2;
-
-  image(bgImage, offsetX, offsetY, drawWidth, drawHeight);
+  if (!bgImage) return;
+  
+  // Make sure background fills the entire screen with proper scaling
+  background(0); // Add a black background first to ensure no gaps
+  
+  push();
+  imageMode(CENTER);
+  
+  // Calculate scales to ensure image covers the entire canvas
+  let scaleX = width / bgImage.width;
+  let scaleY = height / bgImage.height;
+  let scale = max(scaleX, scaleY); // Use the larger scale to ensure full coverage
+  
+  // Calculate new dimensions that will cover the screen
+  let newWidth = bgImage.width * scale;
+  let newHeight = bgImage.height * scale;
+  
+  // Draw the image centered on the canvas
+  image(bgImage, width/2, height/2, newWidth, newHeight);
+  pop();
 }
 
 // ⬛️ Black horizontal lines
@@ -112,80 +167,81 @@ function drawGradientLines() {
   }
 }
 
-function updateSun() {
+function updateNikeLogo() {
   let centerThreshold = width * 0.3;
+  
+  // Calculate logo height based on aspect ratio for proper offscreen positioning
+  let logoAspectRatio = nikeLogoImage ? (nikeLogoImage.width / nikeLogoImage.height) : 1;
+  let logoHeight = (nikeSize * 2) / logoAspectRatio;
+  
   if (mouseX > width / 2 + centerThreshold) {
-    sunTargetY = -sunRadius;
+    nikeTargetY = -logoHeight/2; // Move logo just offscreen at the top
   } else if (mouseX < width / 2 - centerThreshold) {
-    sunTargetY = height + sunRadius;
+    nikeTargetY = height + logoHeight/2; // Move logo just offscreen at the bottom
   } else {
-    sunTargetY = height / 2;
+    nikeTargetY = height / 2;
   }
-  sunY += (sunTargetY - sunY) * easing;
+  
+  // Apply easing for smoother animation
+  nikeY += (nikeTargetY - nikeY) * easing;
 }
 
-// ☀️ Radial gradient sun with black outline
-function drawSun() {
-  let innerColor = color('#D7DA1B');
-  let outerColor = color('#EF5C26');
-  let steps = 100;
-
-  noStroke();
-  for (let r = sunRadius; r > 0; r -= sunRadius / steps) {
-    let inter = map(r, 0, sunRadius, 0, 1);
-    fill(lerpColor(innerColor, outerColor, inter));
-    ellipse(sunX, sunY, r * 2, r * 2);
-  }
-
-  // Outline
-  noFill();
-  stroke(0);
-  strokeWeight(1);
-  ellipse(sunX, sunY, sunRadius * 2, sunRadius * 2);
+// Draw the Nike logo instead of sun
+function drawNikeLogo() {
+  if (!nikeLogoImage) return;
+  
+  imageMode(CENTER);
+  
+  // Calculate the aspect ratio of the logo to prevent squishing
+  let logoAspectRatio = nikeLogoImage.width / nikeLogoImage.height;
+  let logoWidth = nikeSize * 2; // Back to original multiplier
+  let logoHeight = logoWidth / logoAspectRatio;
+  
+  // Draw the Nike logo at the current position while preserving aspect ratio
+  image(nikeLogoImage, nikeX, nikeY, logoWidth, logoHeight);
 }
 
-// ✍️ Dynamic quote text
-function drawText() {
+// Update DOM text elements instead of drawing directly on canvas
+function updateDOMText() {
   targetX = mouseX;
-
-  if (windowWidth <= 768) {
-    targetY = height / 2.3;
-  } else {
-    targetY = height / 2.1;
-  }
+  targetY = mouseY;
 
   quoteX += (targetX - quoteX) * easing;
   quoteY += (targetY - quoteY) * easing;
 
-  noStroke();
-  fill('#FCFCEC');
-  textAlign(CENTER, CENTER);
-  textFont('Termina');
-
-  let fontSize = windowWidth / 45;
-  textSize(fontSize);
-  textStyle(BOLD);
-
-  let lineHeight = fontSize * 1.15;
-
   let centerThreshold = width * 0.3;
-  if (mouseX > width / 2 + centerThreshold) {
-    euphoriaTargetOffsetX = -width / 4;
-  } else if (mouseX < width / 2 - centerThreshold) {
-    euphoriaTargetOffsetX = width / 4;
+  let container = select('#text-container');
+  let quoteDiv = select('.quote-text');
+  
+  if (!container || !quoteDiv) return;
+  
+  // Calculate how far the mouse is from center (as a percentage)
+  let distanceFromCenterX = abs(mouseX - width/2) / (width/2);
+  let distanceFromCenterY = abs(mouseY - height/2) / (height/2);
+  let distanceFromCenter = constrain(max(distanceFromCenterX, distanceFromCenterY), 0, 1);
+  
+  // When mouse is in center, text stays centered
+  // As mouse moves away, text follows with easing
+  if (distanceFromCenter < 0.3) {
+    // Mouse is near center - keep text centered
+    container.style('transform', 'translate(0, 0)');
   } else {
-    euphoriaTargetOffsetX = 0;
+    // Mouse is away from center - text follows with offset
+    let offsetX = map(quoteX, 0, width, -width/4, width/4);
+    let offsetY = map(quoteY, 0, height, -height/4, height/4);
+    container.style('transform', `translate(${offsetX}px, ${offsetY}px)`);
   }
-
-  euphoriaOffsetX += (euphoriaTargetOffsetX - euphoriaOffsetX) * 0.05;
-
-  text(quoteText[0], quoteX + euphoriaOffsetX, quoteY - lineHeight);
-
-  for (let i = 1; i < quoteText.length; i++) {
-    let revealTarget = (mouseX < width / 2 - centerThreshold) ? width :
-                       (mouseX > width / 2 + centerThreshold) ? 0 : width / 2;
-    revealOffsets[i] += (revealTarget - revealOffsets[i]) * 0.05;
-    text(quoteText[i], quoteX - width / 2 + revealOffsets[i], quoteY + (i - 1) * lineHeight);
+  
+  // Handle text visibility and position based on mouse position
+  if (mouseX > width / 2 + centerThreshold) {
+    // Mouse on right side
+    quoteDiv.style('transform', 'translateX(-10%)');
+  } else if (mouseX < width / 2 - centerThreshold) {
+    // Mouse on left side
+    quoteDiv.style('transform', 'translateX(10%)');
+  } else {
+    // Mouse in center
+    quoteDiv.style('transform', 'translateX(0)');
   }
 }
 
@@ -196,19 +252,19 @@ function updateCursor() {
   }
 }
 
-// 📐 Responsive canvas + sun sizing
+// 📐 Responsive canvas + Nike logo sizing
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   timeX = width / 4;
   timeY = height / 4;
 
-  sunX = width / 2;
-  sunY = height / 2;
+  nikeX = width / 2;
+  nikeY = height / 2;
 
-  updateSunSize();
+  updateNikeSize();
 }
 
-// ☀️ Smaller, responsive sun
-function updateSunSize() {
-  sunRadius = width * 0.25; 
+// Update Nike logo size based on window size
+function updateNikeSize() {
+  nikeSize = width * 0.3; // Moderate increase from original 0.25
 }
