@@ -1,4 +1,5 @@
 let bgImage;
+let nikeLogoImage;
 let cursorDiv;
 let canvasReady = false;
 let timeX, timeY;
@@ -8,9 +9,9 @@ let quoteX, quoteY;
 let targetX, targetY;
 let easing = 0.05;
 
-let sunX, sunY;
-let sunTargetY;
-let sunRadius;
+let nikeX, nikeY;
+let nikeTargetY;
+let nikeSize;
 
 const quoteText = [
   "Some call it EUPHORIA,",
@@ -21,6 +22,7 @@ const quoteText = [
 ];
 
 let imagesLoaded = 0;
+const totalImages = 2; // Now loading two images: background and Nike logo
 
 let euphoriaTargetOffsetX = 0;
 let euphoriaOffsetX = 0;
@@ -28,12 +30,13 @@ let revealOffsets = [];
 
 function preload() {
   bgImage = loadImage('img/page3.jpg', imageLoaded, loadError);
+  nikeLogoImage = loadImage('../img/nikelogogreen.png', imageLoaded, loadError);
 }
 
 function imageLoaded() {
   imagesLoaded++;
-  if (imagesLoaded >= 1) {
-    console.log("Image loaded successfully.");
+  if (imagesLoaded >= totalImages) {
+    console.log("All images loaded successfully.");
     canvasReady = true;
     select('#loader').hide();
   }
@@ -56,12 +59,12 @@ function setup() {
   quoteX = width / 2;
   quoteY = height / 2;
 
-  sunX = width / 2;
-  sunY = height / 2;
+  nikeX = width / 2;
+  nikeY = height / 2;
 
-  sunTargetY = sunY;
+  nikeTargetY = nikeY;
 
-  updateSunSize();
+  updateNikeSize();
 
   for (let i = 1; i < quoteText.length; i++) {
     revealOffsets[i] = width;
@@ -121,31 +124,38 @@ function draw() {
     cnv.style('display', 'block');
   }
 
+  // Clear the canvas before drawing each frame
+  clear();
+  
   drawBackground();
   drawGradientLines();
-  updateSun();
-  drawSun();
+  updateNikeLogo();
+  drawNikeLogo();
   updateDOMText();
   updateCursor();
 }
 
 function drawBackground() {
-  let aspectRatio = bgImage.width / bgImage.height;
-  let canvasRatio = width / height;
-  let drawWidth, drawHeight;
-
-  if (canvasRatio > aspectRatio) {
-    drawWidth = width;
-    drawHeight = width / aspectRatio;
-  } else {
-    drawHeight = height;
-    drawWidth = height * aspectRatio;
-  }
-
-  let offsetX = (width - drawWidth) / 2;
-  let offsetY = (height - drawHeight) / 2;
-
-  image(bgImage, offsetX, offsetY, drawWidth, drawHeight);
+  if (!bgImage) return;
+  
+  // Make sure background fills the entire screen with proper scaling
+  background(0); // Add a black background first to ensure no gaps
+  
+  push();
+  imageMode(CENTER);
+  
+  // Calculate scales to ensure image covers the entire canvas
+  let scaleX = width / bgImage.width;
+  let scaleY = height / bgImage.height;
+  let scale = max(scaleX, scaleY); // Use the larger scale to ensure full coverage
+  
+  // Calculate new dimensions that will cover the screen
+  let newWidth = bgImage.width * scale;
+  let newHeight = bgImage.height * scale;
+  
+  // Draw the image centered on the canvas
+  image(bgImage, width/2, height/2, newWidth, newHeight);
+  pop();
 }
 
 // ⬛️ Black horizontal lines
@@ -157,36 +167,38 @@ function drawGradientLines() {
   }
 }
 
-function updateSun() {
+function updateNikeLogo() {
   let centerThreshold = width * 0.3;
+  
+  // Calculate logo height based on aspect ratio for proper offscreen positioning
+  let logoAspectRatio = nikeLogoImage ? (nikeLogoImage.width / nikeLogoImage.height) : 1;
+  let logoHeight = (nikeSize * 2) / logoAspectRatio;
+  
   if (mouseX > width / 2 + centerThreshold) {
-    sunTargetY = -sunRadius;
+    nikeTargetY = -logoHeight/2; // Move logo just offscreen at the top
   } else if (mouseX < width / 2 - centerThreshold) {
-    sunTargetY = height + sunRadius;
+    nikeTargetY = height + logoHeight/2; // Move logo just offscreen at the bottom
   } else {
-    sunTargetY = height / 2;
+    nikeTargetY = height / 2;
   }
-  sunY += (sunTargetY - sunY) * easing;
+  
+  // Apply easing for smoother animation
+  nikeY += (nikeTargetY - nikeY) * easing;
 }
 
-// ☀️ Radial gradient sun with black outline
-function drawSun() {
-  let innerColor = color('#D7DA1B');
-  let outerColor = color('#EF5C26');
-  let steps = 100;
-
-  noStroke();
-  for (let r = sunRadius; r > 0; r -= sunRadius / steps) {
-    let inter = map(r, 0, sunRadius, 0, 1);
-    fill(lerpColor(innerColor, outerColor, inter));
-    ellipse(sunX, sunY, r * 2, r * 2);
-  }
-
-  // Outline
-  noFill();
-  stroke(0);
-  strokeWeight(1);
-  ellipse(sunX, sunY, sunRadius * 2, sunRadius * 2);
+// Draw the Nike logo instead of sun
+function drawNikeLogo() {
+  if (!nikeLogoImage) return;
+  
+  imageMode(CENTER);
+  
+  // Calculate the aspect ratio of the logo to prevent squishing
+  let logoAspectRatio = nikeLogoImage.width / nikeLogoImage.height;
+  let logoWidth = nikeSize * 2; // Back to original multiplier
+  let logoHeight = logoWidth / logoAspectRatio;
+  
+  // Draw the Nike logo at the current position while preserving aspect ratio
+  image(nikeLogoImage, nikeX, nikeY, logoWidth, logoHeight);
 }
 
 // Update DOM text elements instead of drawing directly on canvas
@@ -240,19 +252,19 @@ function updateCursor() {
   }
 }
 
-// 📐 Responsive canvas + sun sizing
+// 📐 Responsive canvas + Nike logo sizing
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   timeX = width / 4;
   timeY = height / 4;
 
-  sunX = width / 2;
-  sunY = height / 2;
+  nikeX = width / 2;
+  nikeY = height / 2;
 
-  updateSunSize();
+  updateNikeSize();
 }
 
-// ☀️ Smaller, responsive sun
-function updateSunSize() {
-  sunRadius = width * 0.25; 
+// Update Nike logo size based on window size
+function updateNikeSize() {
+  nikeSize = width * 0.3; // Moderate increase from original 0.25
 }

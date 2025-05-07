@@ -79,8 +79,12 @@ function createTextElements() {
     textP.style('letter-spacing', '-0.11em');
     textP.style('word-spacing', '0.15em');
     
-    // Additional styling
-    textP.style('color', '#FCFCEC');
+    // Initial text color (will be updated dynamically)
+    textP.style('background', 'linear-gradient(to right, #D7DA1B, #04AD74)');
+    textP.style('-webkit-background-clip', 'text');
+    textP.style('background-clip', 'text');
+    textP.style('color', 'transparent');  // Use color instead of text-fill-color
+    textP.style('-webkit-text-fill-color', 'transparent');
     textP.style('font-family', 'Termina, sans-serif');
     textP.style('margin', '0');
     textP.style('padding', '0');
@@ -101,8 +105,12 @@ function createTextElements() {
   typewriterElement.style('letter-spacing', '-0.11em');
   typewriterElement.style('word-spacing', '0.15em');
   
-  // Additional styling
-  typewriterElement.style('color', '#FCFCEC');
+  // Initial text color (will be updated dynamically)
+  typewriterElement.style('background', 'linear-gradient(to right, #D7DA1B, #04AD74)');
+  typewriterElement.style('-webkit-background-clip', 'text');
+  typewriterElement.style('background-clip', 'text');
+  typewriterElement.style('color', 'transparent');  // Use color instead of text-fill-color  
+  typewriterElement.style('-webkit-text-fill-color', 'transparent');
   typewriterElement.style('font-family', 'Termina, sans-serif');
   typewriterElement.style('margin', '0');
   typewriterElement.style('padding', '0');
@@ -184,12 +192,29 @@ function updateTextPositions() {
   // Update the container position
   quoteContainer.style('transform', `translate(${quoteX - windowWidth/2}px, ${quoteY - windowHeight/2}px)`);
 
-  // Update each line position with the wave effect
+  // Calculate gradient angle based on mouse position
+  // This creates a rotation effect where the gradient follows the mouse
+  const gradientAngle = Math.atan2(mouseY - height/2, mouseX - width/2) * (180 / Math.PI);
+  const gradientStr = `linear-gradient(${gradientAngle}deg, #D7DA1B, #04AD74)`;
+  
+  // Update each line position with the wave effect and dynamic gradient
   for (let i = 0; i < quoteElements.length; i++) {
     let direction = i % 2 === 0 ? 1 : -1;
     let offsetX = direction * sin(frameCount * 0.02 + i) * 20;
     
     quoteElements[i].style('transform', `translateX(${offsetX}px)`);
+    
+    // Make sure the text is visible with the gradient
+    quoteElements[i].style('background', gradientStr);
+    quoteElements[i].style('-webkit-background-clip', 'text');
+    quoteElements[i].style('background-clip', 'text');
+  }
+  
+  // Also update the typewriter element gradient
+  if (typewriterElement) {
+    typewriterElement.style('background', gradientStr);
+    typewriterElement.style('-webkit-background-clip', 'text');
+    typewriterElement.style('background-clip', 'text');
   }
 }
 
