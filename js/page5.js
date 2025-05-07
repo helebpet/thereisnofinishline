@@ -14,7 +14,12 @@ let quoteElements = [];
 let typewriterElement;
 let currentSentenceIndex = 0;
 let sentenceStartTime;
-let sentenceDisplayDuration = 2500; // Each sentence displays for 2.5 seconds
+let sentenceDisplayDuration = 4000; // Increased to 4 seconds (was 2.5)
+let transitionDuration = 1200; // Transition fade duration in milliseconds
+
+// Moving lines variables
+let lineOffsetY = 0;
+let lineSpeed = 0.5; // Speed of upward movement
 
 const quoteText = [
   "The  EXPERIENCE  is  UNIQUE",
@@ -87,7 +92,7 @@ function createTextElements() {
     textP.style('padding', '0');
     textP.style('transform-origin', 'center');
     textP.style('opacity', '0'); // Start hidden
-    textP.style('transition', 'opacity 0.5s ease-in-out');
+    textP.style('transition', 'opacity 0.8s ease-in-out'); // Smoother fade transition
     textP.style('position', 'absolute');
     textP.style('text-align', 'center');
     
@@ -112,6 +117,7 @@ function createTextElements() {
   typewriterElement.style('opacity', '0'); // Start hidden
   typewriterElement.style('position', 'absolute');
   typewriterElement.style('text-align', 'center');
+  typewriterElement.style('transition', 'opacity 1s ease-in-out'); // Smoother fade for typewriter
 }
 
 function setup() {
@@ -137,7 +143,7 @@ function draw() {
   }
 
   drawBackground();
-  drawGradientLines();
+  drawMovingLines();
   updateTextPositions();
   updateSentenceDisplay();
   updateCursor();
@@ -162,12 +168,17 @@ function drawBackground() {
   image(bgImage, offsetX, offsetY, drawWidth, drawHeight);
 }
 
-function drawGradientLines() {
+function drawMovingLines() {
+  // Update the line offset position
+  lineOffsetY += lineSpeed;
+  if (lineOffsetY >= 10) lineOffsetY = 0;
+  
   // Set the line color to black
   stroke(0); // Black color
   strokeWeight(1);
 
-  for (let y = 0; y < height; y += 10) {
+  // Draw lines that continuously move upward
+  for (let y = -lineOffsetY; y < height; y += 10) {
     line(0, y, width, y);
   }
 }
@@ -189,17 +200,28 @@ function updateSentenceDisplay() {
   let currentTime = millis();
   let elapsedTime = currentTime - sentenceStartTime;
   
-  // First handle the sentence animations
+  // Handle the sentence animations with improved transitions
   if (currentSentenceIndex < quoteText.length) {
-    // Hide all sentences
+    // Calculate transition timing
+    let fadeInComplete = elapsedTime > transitionDuration;
+    let fadeOutStart = sentenceDisplayDuration - transitionDuration;
+    let shouldFadeOut = elapsedTime > fadeOutStart;
+    
+    // Set opacity for current sentence based on timing
+    if (!fadeInComplete) {
+      // Still fading in
+      quoteElements[currentSentenceIndex].style('opacity', '1');
+    } else if (shouldFadeOut) {
+      // Start fading out
+      quoteElements[currentSentenceIndex].style('opacity', '0');
+    }
+    
+    // Keep all other sentences hidden
     for (let i = 0; i < quoteElements.length; i++) {
       if (i !== currentSentenceIndex) {
         quoteElements[i].style('opacity', '0');
       }
     }
-    
-    // Show the current sentence
-    quoteElements[currentSentenceIndex].style('opacity', '1');
     
     // Move to next sentence after the display duration
     if (elapsedTime > sentenceDisplayDuration) {
@@ -208,11 +230,11 @@ function updateSentenceDisplay() {
       
       // If we've shown all sentences, set up the typewriter
       if (currentSentenceIndex >= quoteText.length) {
-        typewriterStartTime = currentTime + 500; // Small gap before typewriter starts
+        typewriterStartTime = currentTime + 1000; // Longer gap (1s) before typewriter starts
       }
     }
   } else {
-    // All sentences have been shown, hide them all
+    // All sentences have been shown, hide them all with a nice fade
     for (let i = 0; i < quoteElements.length; i++) {
       quoteElements[i].style('opacity', '0');
     }
@@ -232,6 +254,11 @@ function updateSentenceDisplay() {
 
       let displayText = typewriterText.substring(0, typedLength);
       typewriterElement.html(displayText);
+      
+      // Keep the final "FOREVER." text displayed permanently
+      if (typedLength >= typewriterText.length) {
+        typewriterElement.style('opacity', '1');
+      }
     }
   }
 }
