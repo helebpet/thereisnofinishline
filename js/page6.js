@@ -20,28 +20,27 @@ function setup() {
   checkDevice();
   canvasReady = true;
 
-  // Hide the loader once ready
   let loader = document.getElementById('loader');
   if (loader) {
     loader.style.display = 'none';
   }
 
-  textFont("Termina", 600);  // Font Termina, váha 600
+  textFont("Termina", 600);
   textStyle(BOLD);
+  fill('#FCFCEC');
 
-  radius = min(windowWidth, windowHeight) * 0.2;
+  // Adjusted font size — not too big, not too small
+  let baseFontSize = min(windowWidth, windowHeight) * 0.04;
+  textSize(baseFontSize);
+  radius = baseFontSize * 5.5;
 
   path = [];
   angleOffset = map(mouseX, 0, width, 0, TWO_PI);
   generateFullCircularPath(width / 2, height / 2, radius, 400, angleOffset);
 
   let circleLength = getTotalPathLength();
-  spacing = circleLength / textToDraw.length;
-  reducedSpacing = spacing * 0.6; // Zmenšený spacing jen mezi "I" a "N"
-
-  textSize(spacing * 0.9);
-
-  fill('#FCFCEC');
+  spacing = (circleLength / textToDraw.length) * 0.89;
+  reducedSpacing = spacing * 0.6;
 }
 
 function checkDevice() {
@@ -118,9 +117,11 @@ function drawTextAlongPath(txt, path) {
     text(currentChar, 0, 0);
     pop();
 
-    // Pokud je aktuální písmeno "I" a následuje "N", zmenšíme spacing
+    // Adjust spacing: smaller for "IN", larger after space
     if (currentChar === 'I' && nextChar === 'N') {
       distance += reducedSpacing;
+    } else if (currentChar === ' ') {
+      distance += spacing * 1.15; // word-spacing: 0.15em
     } else {
       distance += spacing;
     }
