@@ -12,6 +12,9 @@ let easing = 0.05;
 let quoteContainer;
 let quoteElements = [];
 let typewriterElement;
+let currentSentenceIndex = 0;
+let sentenceStartTime;
+let sentenceDisplayDuration = 2500; // Each sentence displays for 2.5 seconds
 
 const quoteText = [
   "The  EXPERIENCE  is  UNIQUE",
@@ -30,7 +33,7 @@ let typedLength = 0;
 let lastTypeTime = 0;
 let typeSpeed = 200; // milliseconds between each character
 let typewriterStarted = false;
-let typewriterDelay = 4000; // 4 seconds
+let typewriterDelay = 4000; // 4 seconds after last sentence
 let typewriterStartTime;
 
 function preload() {
@@ -44,7 +47,7 @@ function imageLoaded() {
     canvasReady = true;
     select('#loader').hide();
     createTextElements();
-    typewriterStartTime = millis() + typewriterDelay;
+    sentenceStartTime = millis();
   }
 }
 
@@ -66,29 +69,27 @@ function createTextElements() {
   quoteContainer.style('align-items', 'center');
   quoteContainer.style('justify-content', 'center');
   
-  // Create paragraph elements for each line of quote text
+  // Create paragraph elements for each line of quote text but initially hide them
   for (let i = 0; i < quoteText.length; i++) {
     let textP = createP(quoteText[i]);
     textP.parent(quoteContainer);
     textP.class('quote-line');
     
-    // Apply the styling you requested
+    // Apply the styling
     textP.style('font-weight', '600');
     textP.style('font-size', 'clamp(1.2rem, 2.5vw, 2rem)');
     textP.style('line-height', '1.6');
     textP.style('letter-spacing', '-0.11em');
     textP.style('word-spacing', '0.15em');
-    
-    // Initial text color (will be updated dynamically)
-    textP.style('background', 'linear-gradient(to right, #D7DA1B, #04AD74)');
-    textP.style('-webkit-background-clip', 'text');
-    textP.style('background-clip', 'text');
-    textP.style('color', 'transparent');  // Use color instead of text-fill-color
-    textP.style('-webkit-text-fill-color', 'transparent');
+    textP.style('color', '#FCFCEC'); // Cream color as requested
     textP.style('font-family', 'Termina, sans-serif');
     textP.style('margin', '0');
     textP.style('padding', '0');
     textP.style('transform-origin', 'center');
+    textP.style('opacity', '0'); // Start hidden
+    textP.style('transition', 'opacity 0.5s ease-in-out');
+    textP.style('position', 'absolute');
+    textP.style('text-align', 'center');
     
     quoteElements.push(textP);
   }
@@ -98,22 +99,19 @@ function createTextElements() {
   typewriterElement.parent(quoteContainer);
   typewriterElement.class('typewriter-text');
   
-  // Apply the styling you requested
+  // Apply the styling
   typewriterElement.style('font-weight', '600');
   typewriterElement.style('font-size', 'clamp(1.2rem, 2.5vw, 2rem)');
   typewriterElement.style('line-height', '1.6');
   typewriterElement.style('letter-spacing', '-0.11em');
   typewriterElement.style('word-spacing', '0.15em');
-  
-  // Initial text color (will be updated dynamically)
-  typewriterElement.style('background', 'linear-gradient(to right, #D7DA1B, #04AD74)');
-  typewriterElement.style('-webkit-background-clip', 'text');
-  typewriterElement.style('background-clip', 'text');
-  typewriterElement.style('color', 'transparent');  // Use color instead of text-fill-color  
-  typewriterElement.style('-webkit-text-fill-color', 'transparent');
+  typewriterElement.style('color', '#FCFCEC'); // Cream color as requested
   typewriterElement.style('font-family', 'Termina, sans-serif');
   typewriterElement.style('margin', '0');
   typewriterElement.style('padding', '0');
+  typewriterElement.style('opacity', '0'); // Start hidden
+  typewriterElement.style('position', 'absolute');
+  typewriterElement.style('text-align', 'center');
 }
 
 function setup() {
@@ -141,7 +139,7 @@ function draw() {
   drawBackground();
   drawGradientLines();
   updateTextPositions();
-  updateTypewriter();
+  updateSentenceDisplay();
   updateCursor();
 }
 
@@ -178,62 +176,63 @@ function updateTextPositions() {
   if (!quoteElements.length) return;
 
   targetX = mouseX;
-
-  // Adjusted Y positioning to move the text a bit lower
-  if (windowWidth <= 768) {
-    targetY = height / 2; // Move it to the middle of the screen on smaller screens
-  } else {
-    targetY = height / 1.8; // Slightly lower on larger screens
-  }
+  targetY = height / 2; // Center vertically
 
   quoteX += (targetX - quoteX) * easing;
   quoteY += (targetY - quoteY) * easing;
 
   // Update the container position
   quoteContainer.style('transform', `translate(${quoteX - windowWidth/2}px, ${quoteY - windowHeight/2}px)`);
-
-  // Calculate gradient angle based on mouse position
-  // This creates a rotation effect where the gradient follows the mouse
-  const gradientAngle = Math.atan2(mouseY - height/2, mouseX - width/2) * (180 / Math.PI);
-  const gradientStr = `linear-gradient(${gradientAngle}deg, #D7DA1B, #04AD74)`;
-  
-  // Update each line position with the wave effect and dynamic gradient
-  for (let i = 0; i < quoteElements.length; i++) {
-    let direction = i % 2 === 0 ? 1 : -1;
-    let offsetX = direction * sin(frameCount * 0.02 + i) * 20;
-    
-    quoteElements[i].style('transform', `translateX(${offsetX}px)`);
-    
-    // Make sure the text is visible with the gradient
-    quoteElements[i].style('background', gradientStr);
-    quoteElements[i].style('-webkit-background-clip', 'text');
-    quoteElements[i].style('background-clip', 'text');
-  }
-  
-  // Also update the typewriter element gradient
-  if (typewriterElement) {
-    typewriterElement.style('background', gradientStr);
-    typewriterElement.style('-webkit-background-clip', 'text');
-    typewriterElement.style('background-clip', 'text');
-  }
 }
 
-function updateTypewriter() {
-  // Start typewriter effect after delay
-  if (millis() > typewriterStartTime) {
-    if (!typewriterStarted) {
-      typewriterStarted = true;
-      lastTypeTime = millis();
+function updateSentenceDisplay() {
+  let currentTime = millis();
+  let elapsedTime = currentTime - sentenceStartTime;
+  
+  // First handle the sentence animations
+  if (currentSentenceIndex < quoteText.length) {
+    // Hide all sentences
+    for (let i = 0; i < quoteElements.length; i++) {
+      if (i !== currentSentenceIndex) {
+        quoteElements[i].style('opacity', '0');
+      }
     }
-
-    let currentTime = millis();
-    if (currentTime - lastTypeTime > typeSpeed && typedLength < typewriterText.length) {
-      typedLength++;
-      lastTypeTime = currentTime;
+    
+    // Show the current sentence
+    quoteElements[currentSentenceIndex].style('opacity', '1');
+    
+    // Move to next sentence after the display duration
+    if (elapsedTime > sentenceDisplayDuration) {
+      currentSentenceIndex++;
+      sentenceStartTime = currentTime;
+      
+      // If we've shown all sentences, set up the typewriter
+      if (currentSentenceIndex >= quoteText.length) {
+        typewriterStartTime = currentTime + 500; // Small gap before typewriter starts
+      }
     }
+  } else {
+    // All sentences have been shown, hide them all
+    for (let i = 0; i < quoteElements.length; i++) {
+      quoteElements[i].style('opacity', '0');
+    }
+    
+    // Start typewriter effect
+    if (currentTime > typewriterStartTime) {
+      if (!typewriterStarted) {
+        typewriterStarted = true;
+        lastTypeTime = currentTime;
+        typewriterElement.style('opacity', '1');
+      }
 
-    let displayText = typewriterText.substring(0, typedLength);
-    typewriterElement.html(displayText);
+      if (currentTime - lastTypeTime > typeSpeed && typedLength < typewriterText.length) {
+        typedLength++;
+        lastTypeTime = currentTime;
+      }
+
+      let displayText = typewriterText.substring(0, typedLength);
+      typewriterElement.html(displayText);
+    }
   }
 }
 
