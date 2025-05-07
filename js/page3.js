@@ -28,22 +28,105 @@ let euphoriaTargetOffsetX = 0;
 let euphoriaOffsetX = 0;
 let revealOffsets = [];
 
-function preload() {
-  bgImage = loadImage('img/page3.jpg', imageLoaded, loadError);
-  nikeLogoImage = loadImage('../img/nikelogogreen.png', imageLoaded, loadError);
+// Add debug logging
+function logDebug(message) {
+  console.log(`[DEBUG]: ${message}`);
 }
 
-function imageLoaded() {
+function preload() {
+  // Use absolute paths with leading slash to ensure proper resolution from site root
+  logDebug("Starting to load images...");
+  
+  // Try multiple path options to find the working one
+  try {
+    bgImage = loadImage('./img/page3.jpg', 
+      () => { imageLoaded('background'); }, 
+      () => { loadError('background', './img/page3.jpg'); }
+    );
+  } catch (e) {
+    logDebug("Error in background load: " + e);
+  }
+
+  // Try loading Nike logo with different path options
+  tryLoadNikeLogo();
+}
+
+function tryLoadNikeLogo() {
+  // Try paths in sequence - at least one should work
+  const pathsToTry = [
+    './img/nikelogoorange.png',
+    '/img/nikelogoorange.png',
+    'img/nikelogoorange.png',
+    '../img/nikelogoorange.png',
+    'assets/img/nikelogoorange.png',
+    '/assets/img/nikelogoorange.png'
+  ];
+  
+  logDebug("Attempting to load Nike logo with multiple path options");
+  
+  // Try the first path
+  tryNextPath(0);
+  
+  function tryNextPath(index) {
+    if (index >= pathsToTry.length) {
+      logDebug("All Nike logo paths failed, displaying error state");
+      // Set a flag that Nike logo failed to load
+      window.nikeLogoFailed = true;
+      imagesLoaded++;
+      return;
+    }
+    
+    const path = pathsToTry[index];
+    logDebug(`Trying Nike logo path: ${path}`);
+    
+    // Use a timeout to ensure we don't get stuck if loadImage silently fails
+    const loadTimeout = setTimeout(() => {
+      logDebug(`Timeout loading Nike logo from: ${path}`);
+      tryNextPath(index + 1);
+    }, 3000);
+    
+    try {
+      loadImage(
+        path,
+        (img) => {
+          clearTimeout(loadTimeout);
+          logDebug(`Nike logo loaded successfully from: ${path}`);
+          nikeLogoImage = img;
+          imageLoaded('nike logo');
+        },
+        () => {
+          clearTimeout(loadTimeout);
+          logDebug(`Failed to load Nike logo from: ${path}`);
+          tryNextPath(index + 1);
+        }
+      );
+    } catch (e) {
+      clearTimeout(loadTimeout);
+      logDebug(`Error trying to load Nike logo from ${path}: ${e}`);
+      tryNextPath(index + 1);
+    }
+  }
+}
+
+function imageLoaded(imageName) {
+  logDebug(`Image loaded: ${imageName}`);
   imagesLoaded++;
   if (imagesLoaded >= totalImages) {
-    console.log("All images loaded successfully.");
+    logDebug("All images loaded successfully.");
     canvasReady = true;
     select('#loader').hide();
   }
 }
 
-function loadError(err) {
-  console.error("Image failed to load:", err);
+function loadError(imageName, path) {
+  console.error(`Image failed to load: ${imageName} from path: ${path}`);
+  // Still increment the counter to avoid getting stuck
+  imagesLoaded++;
+  if (imagesLoaded >= totalImages) {
+    logDebug("All image attempts completed, but with errors.");
+    canvasReady = true;
+    select('#loader').hide();
+  }
 }
 
 function setup() {
@@ -72,6 +155,9 @@ function setup() {
   
   // Create and style the text elements
   createAndStyleTextElements();
+  
+  // Log canvas dimensions for debugging
+  logDebug(`Canvas dimensions: ${width} x ${height}`);
 }
 
 function createAndStyleTextElements() {
@@ -188,7 +274,22 @@ function updateNikeLogo() {
 
 // Draw the Nike logo instead of sun
 function drawNikeLogo() {
-  if (!nikeLogoImage) return;
+  // Skip if Nike logo failed to load or isn't ready yet
+  if (!nikeLogoImage) {
+    if (window.nikeLogoFailed) {
+      // Draw a placeholder if Nike logo failed to load
+      push();
+      fill(255, 165, 0); // Orange color to match Nike logo
+      noStroke();
+      ellipse(nikeX, nikeY, nikeSize, nikeSize/2);
+      textAlign(CENTER, CENTER);
+      fill(0);
+      textSize(16);
+      text("NIKE", nikeX, nikeY);
+      pop();
+    }
+    return;
+  }
   
   imageMode(CENTER);
   
@@ -199,6 +300,8 @@ function drawNikeLogo() {
   
   // Draw the Nike logo at the current position while preserving aspect ratio
   image(nikeLogoImage, nikeX, nikeY, logoWidth, logoHeight);
+  
+  // Debug info removed as requested
 }
 
 // Update DOM text elements instead of drawing directly on canvas
