@@ -2,7 +2,7 @@ let cursorDiv;
 let canvasReady = false;
 let isMobile = false;
 
-let textToDraw = "And from that POINT on, ...  ";
+let textToDraw = "AND FROM THAT POINT ON, ...  ";
 let spacing;
 let reducedSpacing;
 let path = [];
