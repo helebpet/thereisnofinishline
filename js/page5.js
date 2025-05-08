@@ -71,6 +71,7 @@ let typewriterStartTime;
 function preload() {
   // Load background image
   bgImage = loadImage('img/page5.jpg', () => imageLoaded('background'), loadError);
+  bgImage.alt = "Runners in a race wearing competition bibs, showing the intensity of competitive running";
   
   // Load Nike logo
   loadNikeLogo();
@@ -103,6 +104,7 @@ function loadNikeLogo() {
         path,
         (img) => {
           nikeLogoImage = img;
+          nikeLogoImage.alt = "Nike swoosh logo in green color";
           imageLoaded('nike logo');
         },
         () => {
@@ -158,6 +160,9 @@ function createTextElements() {
   quoteContainer.style('align-items', 'center');
   quoteContainer.style('justify-content', 'center');
   quoteContainer.style('overflow', 'visible');
+  // Add role and aria attributes for accessibility
+  quoteContainer.attribute('role', 'region');
+  quoteContainer.attribute('aria-label', 'Motivational running quotes');
 
   // Create elements for each quote line
   for (let i = 0; i < quoteText.length; i++) {
@@ -219,6 +224,10 @@ function setup() {
   // Create canvas and hide it initially
   let cnv = createCanvas(windowWidth, windowHeight);
   cnv.style('display', 'none');
+  // Add accessibility attributes to canvas
+  cnv.attribute('aria-label', 'Nike motivational running animation');
+  cnv.attribute('role', 'img');
+  
   frameRate(60);
   noCursor();
   cursorDiv = select('.custom-cursor');
@@ -463,6 +472,12 @@ function drawNikeLogo() {
   rotate(nikeLogoRotation);
   tint(255, 255 * logoFadeOpacity); // Apply fade effect
   image(nikeLogoImage, 0, 0, logoWidth, logoHeight);
+  // Add equivalent alt text information through aria-label on the canvas
+  let cnv = select('canvas');
+  if (cnv) {
+    cnv.attribute('aria-label', cnv.attribute('aria-label') + 
+      (logoFadeOpacity > 0.5 ? '. A green Nike swoosh logo is currently visible' : ''));
+  }
   pop();
 }
 

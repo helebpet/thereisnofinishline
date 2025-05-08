@@ -60,6 +60,8 @@ function loadNikeLogo() {
         path,
         (img) => {
           nikeLogoImage = img;
+          // Add alt text attribute to Nike logo image
+          nikeLogoImage.alt = "Nike swoosh logo in green color";
           imageLoaded('nike logo');
         },
         () => {
@@ -94,6 +96,11 @@ function loadError(imageName) {
 function setup() {
   let cnv = createCanvas(windowWidth, windowHeight);
   cnv.style('display', 'none'); // Hide until images are ready
+  
+  // Add accessibility attributes to canvas
+  cnv.attribute('aria-label', 'Interactive Nike experience with animated text and logo');
+  cnv.attribute('role', 'img');
+  
   frameRate(60);
   noCursor(); // Hide default cursor
   cursorDiv = select('.custom-cursor');
@@ -146,6 +153,10 @@ function createAndStyleTextElements() {
     textContent += line + '<br>';
   });
   quoteDiv.html(textContent);
+  
+  // Add ARIA attributes for accessibility
+  quoteDiv.attribute('aria-live', 'polite');
+  quoteDiv.attribute('role', 'text');
 }
 
 // Main draw loop
@@ -227,6 +238,20 @@ function drawNikeLogo() {
       textSize(16);
       text("NIKE", nikeX, nikeY);
       pop();
+      
+      // If using a fallback, announce to screen readers
+      if (frameCount % 60 === 0) { // Only update occasionally to avoid constant announcements
+        let ariaLive = select('#aria-live') || createDiv('');
+        if (!select('#aria-live')) {
+          ariaLive.id('aria-live');
+          ariaLive.attribute('aria-live', 'polite');
+          ariaLive.style('position', 'absolute');
+          ariaLive.style('width', '1px');
+          ariaLive.style('height', '1px');
+          ariaLive.style('overflow', 'hidden');
+        }
+        ariaLive.html('Nike logo displayed as fallback text due to image loading failure');
+      }
     }
     return;
   }
@@ -238,6 +263,21 @@ function drawNikeLogo() {
   let logoHeight = logoWidth / logoAspectRatio;
 
   image(nikeLogoImage, nikeX, nikeY, logoWidth, logoHeight);
+  
+  // Create an accessible description for screen readers
+  if (frameCount % 300 === 0) { // Update description occasionally
+    let description = `Nike green swoosh logo positioned at ${nikeY > height/2 ? 'bottom' : nikeY < 0 ? 'top' : 'center'} of screen`;
+    let ariaLive = select('#aria-live') || createDiv('');
+    if (!select('#aria-live')) {
+      ariaLive.id('aria-live');
+      ariaLive.attribute('aria-live', 'polite');
+      ariaLive.style('position', 'absolute');
+      ariaLive.style('width', '1px');
+      ariaLive.style('height', '1px');
+      ariaLive.style('overflow', 'hidden');
+    }
+    ariaLive.html(description);
+  }
 }
 
 // Animate and offset DOM text based on mouse position

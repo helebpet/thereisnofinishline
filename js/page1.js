@@ -31,7 +31,10 @@ let imagesLoaded = 0;
 // Function to preload images
 function preload() {
   bgImage = loadImage('img/page1.jpg', imageLoaded, loadError);
+  bgImage.alt = "Orange-yellow gradient background showing silhouettes of runners in motion";
+  
   bgImageMobile = loadImage('img/page1mobile.jpg', imageLoaded, loadError);
+  bgImageMobile.alt = "Mobile version of orange-yellow gradient background with runner silhouettes";
 }
 
 // Counter for loaded images

@@ -1,6 +1,15 @@
+/* The style.css was organized with the help of ChatGPT. The responsiveness for mobile devices was also implemented using ChatGPT. */
+
+/* =======================================================================
+   1. Imports & Font Definitions
+   ======================================================================= */
+/* Import Termina font from Adobe Typekit */
 @import url("https://use.typekit.net/kdi7uwg.css");
 
-/* -------------------- BASE -------------------- */
+/* =======================================================================
+   2. Base & Reset Styles
+   ======================================================================= */
+/* Reset margins, padding, and box sizing for all elements */
 * {
   margin: 0;
   padding: 0;
@@ -9,27 +18,33 @@
   font-weight: 900;
 }
 
+/* Remove underline from links by default */
 a {
   text-decoration: none;
 }
 
+/* Base body styling */
 body {
-  background-color: #FCFCEC;
-  overflow: hidden;
-  cursor: none;
+  background-color: #FCFCEC; /* Cream base color */
+  overflow: hidden; /* Prevent scrolling */
+  cursor: none; /* Hide default cursor for custom cursor implementation */
   font-weight: 900;
   font-style: normal;
 }
 
+/* Canvas styling for p5.js content */
 canvas {
   display: block;
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 0;
+  z-index: 0; /* Ensure canvas sits below other content */
 }
 
-/* -------------------- LAYOUT -------------------- */
+/* =======================================================================
+   3. Layout Components
+   ======================================================================= */
+/* Centered content wrapper for vertically and horizontally centered elements */
 .centered-wrapper {
   position: absolute;
   top: 50%;
@@ -46,22 +61,37 @@ canvas {
   z-index: 1;
 }
 
-/* -------------------- TEXT -------------------- */
+/* Wrapper for page 2 content with adjusted padding */
+.page2-wrapper {
+  padding: 120px 4% 20px 4%; /* Top padding accounts for header */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* =======================================================================
+   4. Typography
+   ======================================================================= */
+/* Main headline text style */
 .main-text {
-  color: #04AD74;
-  font-size: clamp(3rem, 7vw, 6rem);
+  color: #04AD74; /* Green color */
+  font-size: clamp(3rem, 7vw, 6rem); /* Responsive font sizing */
   line-height: 1.2;
   font-weight: 900;
 }
 
+/* Secondary/subtitle text style */
 .subtext {
-  color: #EF5C26;
+  color: #EF5C26; /* Orange color */
   font-size: clamp(0.9rem, 1.5vw, 1.2rem);
   font-weight: 600;
   max-width: 90%;
 }
 
-/* -------------------- QUOTE -------------------- */
+/* Quote display styling */
 .quote {
   position: absolute;
   bottom: 50px;
@@ -77,18 +107,21 @@ canvas {
   font-weight: 900;
 }
 
-/* -------------------- BUTTONS -------------------- */
+/* =======================================================================
+   5. Button Styles
+   ======================================================================= */
+/* Base button styles */
 button,
 .arrow-button {
   width: 130px;
   height: 64px;
   padding: 0;
   border: 1px solid black;
-  border-radius: 9999px;
-  background-color: #EFBD06;
+  border-radius: 9999px; /* Fully rounded corners */
+  background-color: #EFBD06; /* Yellow */
   color: black;
   font-size: 16px;
-  cursor: none;
+  cursor: none; /* Hide default cursor */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,14 +132,14 @@ button,
   text-decoration: none;
 }
 
-/* Circle button base styling */
+/* Circle button styling - used for page navigation */
 .circle-button {
   width: 130px;
   height: 64px;
   padding: 0;
   border: 1px solid black;
   border-radius: 9999px;
-  background-color: #EFBD06;
+  background-color: #EFBD06; /* Yellow */
   color: black;
   font-size: 16px;
   cursor: none;
@@ -121,12 +154,13 @@ button,
   position: relative;
 }
 
-/* Remove the original before pseudo-element */
+/* Remove default pseudo-element */
 .circle-button::before {
   content: none;
 }
 
-/* Add content for each page */
+/* Page number indicators for circle buttons */
+/* Page 1 indicator */
 body.page1 .circle-button::after {
   content: "1/6";
   position: absolute;
@@ -139,6 +173,7 @@ body.page1 .circle-button::after {
   font-size: 16px;
 }
 
+/* Page 2 indicator */
 body.page2 .circle-button::after {
   content: "2/6";
   position: absolute;
@@ -151,6 +186,7 @@ body.page2 .circle-button::after {
   font-size: 16px;
 }
 
+/* Page 3 indicator */
 body.page3 .circle-button::after {
   content: "3/6";
   position: absolute;
@@ -163,6 +199,7 @@ body.page3 .circle-button::after {
   font-size: 16px;
 }
 
+/* Page 4 indicator */
 body.page4 .circle-button::after {
   content: "4/6";
   position: absolute;
@@ -175,6 +212,7 @@ body.page4 .circle-button::after {
   font-size: 16px;
 }
 
+/* Page 5 indicator */
 body.page5 .circle-button::after {
   content: "5/6";
   position: absolute;
@@ -187,6 +225,7 @@ body.page5 .circle-button::after {
   font-size: 16px;
 }
 
+/* Page 6 indicator */
 body.page6 .circle-button::after {
   content: "6/6";
   position: absolute;
@@ -199,24 +238,25 @@ body.page6 .circle-button::after {
   font-size: 16px;
 }
 
-/* For about page, use Nike logo image */
+/* Special styling for About page - Nike logo instead of page number */
 body.about-page .circle-button {
   background-image: url('../img/logo.png');
   background-size: 40%;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #04AD74;
+  background-color: #04AD74; /* Green background */
 }
 
 body.about-page .circle-button::after {
-  content: none;
+  content: none; /* No text on about page button */
 }
 
+/* Enter button styling - used for main CTAs */
 .enter-button {
-  background-color: #EFBD06;
+  background-color: #EFBD06; /* Yellow */
   border: 1px solid black;
   border-radius: 30px;
-  color: #EF5C26;
+  color: #EF5C26; /* Orange text */
   font-weight: 700;
   padding: 0.6em 2em;
   font-size: clamp(1rem, 1.5vw, 1.5rem);
@@ -226,26 +266,27 @@ body.about-page .circle-button::after {
   cursor: none;
 }
 
-/* Hover Effects - removed for circle-button */
+/* About button styling when on the About page */
+body.about-page .about-button {
+  background-color: #04AD74; /* Green when on about page */
+  background-size: 40%;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 1px solid black;
+}
+
+/* Button hover effects - applied to most buttons */
 .enter-button:hover,
 button:hover:not(.circle-button),
 .arrow-button:hover,
 .about-button:hover {
   transform: scale(1.05);
   background-color: #000;
-  color: #FCFCEC;
+  color: #FCFCEC; /* Cream text on hover */
   text-decoration: none;
 }
 
-body.about-page .about-button {
-  background-color: #04AD74; /* Change from yellow to green when on about page */
-  background-size: 40%;
-  background-position: center;
-  background-repeat: no-repeat;
-  border: 1px solid black; /* Keep the border */
-}
-
-/* Hover Effects - updated to exclude .about-button on about page */
+/* More specific hover rules to exclude certain buttons */
 .enter-button:hover,
 button:hover:not(.circle-button):not(.about-button),
 .arrow-button:hover,
@@ -259,89 +300,92 @@ button:hover:not(.circle-button):not(.about-button),
 /* Remove hover effect specifically when on about page */
 body.about-page .about-button:hover {
   transform: none;
-  background-color: #04AD74;
+  background-color: #04AD74; /* Keep green */
   color: black;
   cursor: default;
 }
 
-
-
-/* -------------------- HEADER -------------------- */
+/* =======================================================================
+   6. Header & Navigation
+   ======================================================================= */
+/* Header bar containing navigation elements */
 header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 20;
+  z-index: 20; /* Ensure header is above other content */
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: rgba(252, 252, 236, 0); /* Fully opaque */
+  background-color: rgba(252, 252, 236, 0); /* Transparent background */
 }
 
-
+/* Container for left-aligned header buttons */
 .left-buttons {
   display: flex;
   gap: 10px;
   flex-wrap: nowrap;
 }
 
-/* -------------------- CUSTOM CURSOR -------------------- */
+/* Header styling specific to page 3 */
+body.page3 header {
+  background-color: transparent;
+  border-bottom: none;
+}
+
+/* =======================================================================
+   7. Custom Cursor
+   ======================================================================= */
+/* Custom cursor styling that follows mouse pointer */
 .custom-cursor {
   width: 30px;
   height: 30px;
   border: 1px solid #000;
   border-radius: 50%;
   position: fixed;
-  pointer-events: none;
+  pointer-events: none; /* Allows clicking through cursor */
   transform: translate(-50%, -50%);
   transition: background-color 0.3s ease, transform 0.3s ease;
-  z-index: 9999;
+  z-index: 9999; /* Ensures cursor is always on top */
 }
 
-/* -------------------- LOADER -------------------- */
+/* =======================================================================
+   8. Loader
+   ======================================================================= */
+/* Loading screen shown while assets are loading */
 .loader {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #FCFCEC;
-  color: #EF5C26;
+  background-color: #FCFCEC; /* Cream background */
+  color: #EF5C26; /* Orange text */
   font-size: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 99;
+  z-index: 99; /* High z-index to display above other content */
   font-family: "Termina", sans-serif;
   font-weight: bold;
 }
 
-/* -------------------- PAGE 2 STYLES -------------------- */
+/* =======================================================================
+   9. Page-Specific Styles
+   ======================================================================= */
+/* Page 2 specific background color */
 body.page2 {
-  background-color: #D7DA1B;
+  background-color: #D7DA1B; /* Lime green/yellow */
 }
 
-/* Wrapper that contains header + main for page2 */
-.page2-wrapper {
-  padding: 120px 4% 20px 4%; /* Mírně menší padding pro lepší responsivitu */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
-/* Header specific styling for page3 */
-body.page3 header {
-  background-color: transparent;
-  border-bottom: none;
-}
-
-/* -------------------- RESPONSIVE -------------------- */
+/* =======================================================================
+   10. Responsive Adjustments
+   ======================================================================= */
+/* Large tablet and small desktop adjustments */
 @media (max-width: 1024px) {
+  /* Reduce quote size and positioning */
   .quote {
     font-size: 68px;
     bottom: 40px;
@@ -349,6 +393,7 @@ body.page3 header {
     max-width: 80%;
   }
 
+  /* Reduce button size */
   button,
   .circle-button,
   .arrow-button {
@@ -357,6 +402,7 @@ body.page3 header {
     font-size: 15px;
   }
   
+  /* Reduce font size for page indicators */
   body.page1 .circle-button::after,
   body.page2 .circle-button::after,
   body.page3 .circle-button::after,
@@ -366,20 +412,25 @@ body.page3 header {
     font-size: 15px;
   }
   
+  /* Adjust main quote size */
   .main-quote {
     font-size: clamp(2rem, 5vw, 4rem);
   }
 }
 
+/* Tablet and mobile adjustments */
 @media (max-width: 768px) {
+  /* Reduce spacing in header */
   header {
     gap: 10px;
   }
 
+  /* Reduce spacing between left buttons */
   .left-buttons {
     gap: 8px;
   }
 
+  /* Further reduce quote size and adjust positioning */
   .quote {
     font-size: 56px;
     bottom: 30px;
@@ -387,6 +438,7 @@ body.page3 header {
     margin: 10px;
   }
 
+  /* Smaller buttons for mobile */
   button,
   .circle-button,
   .arrow-button {
@@ -395,6 +447,7 @@ body.page3 header {
     font-size: 14px;
   }
   
+  /* Smaller text for page indicators */
   body.page1 .circle-button::after,
   body.page2 .circle-button::after,
   body.page3 .circle-button::after,
@@ -404,20 +457,23 @@ body.page3 header {
     font-size: 14px;
   }
   
+  /* Enlarge logo on about page button for better visibility */
   body.about-page .circle-button {
     background-size: 50%;
   }
   
+  /* Adjust page 3 wrapper padding */
   .page3-wrapper {
     padding: 100px 30px 30px 30px;
   }
   
+  /* Adjust main quote size for mobile */
   .main-quote {
     font-size: clamp(1.8rem, 4vw, 3rem);
   }
 
+  /* Reduce text block paragraph size */
   .text-block p {
     font-size: clamp(0.8rem, 2vw, 1.2rem);
   }
-  
 }
