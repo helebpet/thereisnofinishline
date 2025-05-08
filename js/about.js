@@ -1,11 +1,25 @@
+// This sketch was organized and partially developed with the help of ChatGPT
+
+// =====================================================================
+// GLOBAL VARIABLES
+// =====================================================================
+
+// Image assets
 let bgImage, bgImageMobile;
 let canvasReady = false;
 let imagesLoaded = 0;
+
+// Quote display variables
 let activeQuoteIndex = 0;
+
+// Animation variables
 let targetRotation = 0;
 let currentRotation = 0;
+
+// DOM elements
 let cursorDiv;
 
+// Quote content array
 const quoteText = [
   "THERE  IS\nNO  FINISH  LINE.",
   "THIS  SLOGAN,  INTRODUCED  IN  1977,",
@@ -25,107 +39,140 @@ const quoteText = [
   "and  the  true  victory  lies  in  the  journey  itself."
 ];
 
+// =====================================================================
+// SETUP & CORE P5.JS FUNCTIONS
+// =====================================================================
+
+/**
+ * Preload assets before setup
+ */
 function preload() {
+  // Load desktop and mobile background images
   bgImage = loadImage('img/page1.jpg', imageLoaded, loadError);
   bgImageMobile = loadImage('img/page1mobile.jpg', imageLoaded, loadError);
 }
 
+/**
+ * Called when an image is successfully loaded
+ */
 function imageLoaded() {
   imagesLoaded++;
+  // Once all images are loaded, mark canvas as ready and hide loader
   if (imagesLoaded >= 1) {
     canvasReady = true;
     select('#loader')?.hide();
   }
 }
 
+/**
+ * Error handling for image loading
+ */
 function loadError(err) {
   console.error("Image failed to load:", err);
 }
 
+/**
+ * Initial setup function
+ */
 function setup() {
+  // Create canvas at window size
   let cnv = createCanvas(windowWidth, windowHeight);
-  cnv.style('display', 'none');
+  cnv.style('display', 'none'); // Hide until loaded
   frameRate(60);
   
-  // Hide cursor and use custom cursor
+  // Hide default cursor and use custom cursor
   noCursor();
   
-  // Create DOM elements with the required styling
+  // Create DOM elements for the quotes
   createDomQuote();
   
-  // Add ambient animation to the entire page
+  // Prevent scrolling of the main page
   document.body.style.overflow = 'hidden';
   
-  // Apply initial progress
+  // Show all quotes with animation after a short delay
   setTimeout(() => {
-    showAllQuotes(); // Show all quotes at once
+    showAllQuotes();
   }, 500);
   
   // Set up the custom cursor
-  cursorDiv = select('.custom-cursor');
-  if (!cursorDiv) {
-    // Create custom cursor if it doesn't exist
-    cursorDiv = createDiv();
-    cursorDiv.class('custom-cursor');
-    cursorDiv.style('position', 'fixed');
-    cursorDiv.style('width', '24px');
-    cursorDiv.style('height', '24px');
-    cursorDiv.style('border-radius', '50%');
-    cursorDiv.style('background-color', 'rgba(252, 252, 236, 0.5)');
-    cursorDiv.style('border', '1px solid rgba(252, 252, 236, 0.8)');
-    cursorDiv.style('pointer-events', 'none');
-    cursorDiv.style('transform', 'translate(-50%, -50%)');
-    cursorDiv.style('z-index', '9999');
-    cursorDiv.style('mix-blend-mode', 'difference');
-  }
+  setupCustomCursor();
 }
 
+/**
+ * Main draw loop - runs continuously
+ */
 function draw() {
+  // Don't render until assets are loaded
   if (!canvasReady) return;
 
-  // Show the canvas if it was hidden
+  // Show the canvas once it's ready
   let cnv = select('canvas');
   if (cnv && cnv.style('display') === 'none') {
     cnv.style('display', 'block');
   }
 
-  // Drawing functions
+  // Apply rotation effect based on mouse position
+  applyRotationEffect();
+  
+  // Draw background and visual elements
+  drawBackground();
+  drawGradientLines();
+  
+  // Update custom cursor position
+  updateCustomCursor();
+}
+
+/**
+ * Handle window resizing
+ */
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  drawBackground(); // Re-check which background image to use
+}
+
+// =====================================================================
+// VISUAL EFFECTS
+// =====================================================================
+
+/**
+ * Apply rotation effect based on mouse or device movement
+ */
+function applyRotationEffect() {
   push();
-  // Smooth rotation effect based on mouse position
+  
+  // Update rotation target based on mouse position
   if (mouseX !== pmouseX || mouseY !== pmouseY) {
     targetRotation = map(mouseX, 0, width, -0.02, 0.02);
     currentRotation = lerp(currentRotation, targetRotation, 0.05);
   } else {
+    // Gradually return to center when mouse is still
     currentRotation = lerp(currentRotation, 0, 0.05);
   }
   
+  // Apply rotation transformation
   translate(width/2, height/2);
   rotate(currentRotation);
   translate(-width/2, -height/2);
   
-  drawBackground();
   pop();
-  
-  drawGradientLines();
-  
-  // Update custom cursor position
-  if (cursorDiv) {
-    cursorDiv.position(mouseX, mouseY);
-  }
 }
 
+/**
+ * Draw the background image with responsive sizing
+ */
 function drawBackground() {
   // Select appropriate background image based on device width
   let bgImageToUse = width <= 768 ? bgImageMobile : bgImage;
   
-  // Enlarge background to prevent white edges when rotating
+  // Calculate aspect ratios for proper scaling
   let aspectRatio = bgImageToUse.width / bgImageToUse.height;
   let canvasRatio = width / height;
   let drawWidth, drawHeight;
   
-  // Add extra size to prevent white edges (20% extra)
+  // Add extra size (20%) to prevent white edges when rotating
   const scaleFactor = 1.2;
 
+  // Determine dimensions to maintain aspect ratio while filling canvas
   if (canvasRatio > aspectRatio) {
     drawWidth = width * scaleFactor;
     drawHeight = (width * scaleFactor) / aspectRatio;
@@ -134,12 +181,17 @@ function drawBackground() {
     drawWidth = (height * scaleFactor) * aspectRatio;
   }
 
+  // Center the image
   let offsetX = (width - drawWidth) / 2;
   let offsetY = (height - drawHeight) / 2;
 
+  // Draw the background image
   image(bgImageToUse, offsetX, offsetY, drawWidth, drawHeight);
 }
 
+/**
+ * Draw horizontal and vertical scan lines for visual effect
+ */
 function drawGradientLines() {
   // Draw horizontal scan lines with varying opacity
   for (let y = 0; y < height; y += 20) {
@@ -158,6 +210,45 @@ function drawGradientLines() {
   }
 }
 
+/**
+ * Set up the custom cursor
+ */
+function setupCustomCursor() {
+  cursorDiv = select('.custom-cursor');
+  if (!cursorDiv) {
+    // Create custom cursor if it doesn't exist
+    cursorDiv = createDiv();
+    cursorDiv.class('custom-cursor');
+    cursorDiv.style('position', 'fixed');
+    cursorDiv.style('width', '24px');
+    cursorDiv.style('height', '24px');
+    cursorDiv.style('border-radius', '50%');
+    cursorDiv.style('background-color', 'rgba(252, 252, 236, 0.5)');
+    cursorDiv.style('border', '1px solid rgba(252, 252, 236, 0.8)');
+    cursorDiv.style('pointer-events', 'none');
+    cursorDiv.style('transform', 'translate(-50%, -50%)');
+    cursorDiv.style('z-index', '9999');
+    cursorDiv.style('mix-blend-mode', 'difference');
+  }
+}
+
+/**
+ * Update the custom cursor position to follow the mouse
+ */
+function updateCustomCursor() {
+  if (cursorDiv) {
+    cursorDiv.position(mouseX, mouseY);
+  }
+}
+
+// =====================================================================
+// PARTICLE SYSTEM (currently unused but available)
+// =====================================================================
+
+/**
+ * Update and draw all particles
+ * Note: This function is defined but not currently called in draw()
+ */
 function updateParticles() {
   // Create particles on movement
   if (mouseX !== pmouseX || mouseY !== pmouseY && frameCount % 3 === 0) {
@@ -177,10 +268,18 @@ function updateParticles() {
   }
 }
 
+/**
+ * Create a new particle at the mouse position
+ * Note: This function is defined but not currently used
+ */
 function createParticle() {
   particles.push(new Particle(mouseX, mouseY));
 }
 
+/**
+ * Particle class for visual effects
+ * Note: This class is defined but not currently instantiated
+ */
 class Particle {
   constructor(x, y) {
     this.x = x;
@@ -209,8 +308,15 @@ class Particle {
   }
 }
 
-// --- DOM CREATION ---
+// =====================================================================
+// DOM CREATION & QUOTE DISPLAY
+// =====================================================================
+
+/**
+ * Create all DOM elements for the quote display
+ */
 function createDomQuote() {
+  // Create main container
   const container = createDiv().id('quote-container');
   container.style('position', 'absolute');
   container.style('top', '15%');
@@ -219,27 +325,50 @@ function createDomQuote() {
   container.style('font-family', 'Termina, sans-serif');
   container.style('z-index', '10');
   
-  // Title (first quote) - ONLY ONCE
+  // Create title (first quote)
+  createMainTitle(container);
+  
+  // Create scrollable container for remaining quotes
+  const textContainer = createScrollableContainer(container);
+  
+  // Add individual paragraphs for each quote
+  createQuoteParagraphs(textContainer);
+  
+  // Add scroll indicator
+  createScrollIndicator(container);
+  
+  // Add scroll event listener to track visible quotes
+  setupScrollListener(textContainer);
+}
+
+/**
+ * Create the main title element
+ */
+function createMainTitle(container) {
   const h1 = createElement('h1', quoteText[0]);
   h1.parent(container);
   h1.style('color', '#FCFCEC');
   h1.style('font-size', 'clamp(3rem, 7vw, 6rem)');
-  h1.style('line-height', '1.1'); // Decreased line height for the title
+  h1.style('line-height', '1.1');
   h1.style('font-weight', '900');
   h1.style('margin-bottom', '0.7em');
   h1.style('transition', 'opacity 0.5s ease, transform 0.5s ease');
   h1.id('main-title');
-  
-  // Create scrollable container for quotes (not including the title)
+}
+
+/**
+ * Create the scrollable container for quotes
+ */
+function createScrollableContainer(container) {
   const textContainer = createDiv().id('text-container');
   textContainer.parent(container);
   textContainer.style('max-height', '40vh');
   textContainer.style('overflow-y', 'auto');
   textContainer.style('scrollbar-width', 'thin');
   textContainer.style('scrollbar-color', '#FCFCEC rgba(252, 252, 236, 0.2)');
-  textContainer.style('padding', '15px'); // Added padding inside the scrolling area
+  textContainer.style('padding', '15px');
   
-  // Custom scrollbar styling
+  // Add custom scrollbar styling
   const scrollbarStyle = document.createElement('style');
   scrollbarStyle.innerHTML = `
     #text-container::-webkit-scrollbar {
@@ -255,6 +384,13 @@ function createDomQuote() {
   `;
   document.head.appendChild(scrollbarStyle);
   
+  return textContainer;
+}
+
+/**
+ * Create paragraphs for each quote
+ */
+function createQuoteParagraphs(textContainer) {
   // Create paragraphs starting from index 1 (skip the title)
   for (let i = 1; i < quoteText.length; i++) {
     const p = createElement('p', quoteText[i]);
@@ -266,7 +402,7 @@ function createDomQuote() {
     p.style('letter-spacing', '-0.11em');
     p.style('word-spacing', '0.15em');
     p.style('text-align', 'left');
-    p.style('margin-bottom', '0'); // No extra paragraph spacing
+    p.style('margin-bottom', '0');
     p.style('padding-bottom', '0');
     p.style('opacity', '0'); // Start invisible
     p.style('transform', 'translateY(15px)');
@@ -283,8 +419,12 @@ function createDomQuote() {
       p.style('opacity', '1');
     });
   }
-  
-  // Add scroll indicator
+}
+
+/**
+ * Create the scroll indicator
+ */
+function createScrollIndicator(container) {
   const scrollIndicator = createDiv().id('scroll-indicator');
   scrollIndicator.parent(container);
   scrollIndicator.style('margin-top', '10px');
@@ -312,10 +452,15 @@ function createDomQuote() {
     }
   `;
   document.head.appendChild(bounceStyle);
-  
-  // Hide scroll indicator when scrolling starts
+}
+
+/**
+ * Setup the scroll event listener to track visible quotes
+ */
+function setupScrollListener(textContainer) {
   textContainer.elt.addEventListener('scroll', () => {
-    scrollIndicator.style('opacity', '0');
+    // Hide scroll indicator when scrolling starts
+    select('#scroll-indicator').style('opacity', '0');
     
     // Determine which quote is in view based on scroll position
     const scrollPosition = textContainer.elt.scrollTop;
@@ -346,7 +491,14 @@ function createDomQuote() {
   });
 }
 
-// Helper function to calculate how visible an element is in the viewport
+// =====================================================================
+// INTERACTION & NAVIGATION
+// =====================================================================
+
+/**
+ * Calculate how visible an element is in the viewport
+ * @return {number} - Visibility ratio between 0 and 1
+ */
 function calculateVisibility(scrollPos, elemTop, elemHeight, viewportHeight) {
   const viewTop = scrollPos;
   const viewBottom = scrollPos + viewportHeight;
@@ -368,11 +520,14 @@ function calculateVisibility(scrollPos, elemTop, elemHeight, viewportHeight) {
   return visibleHeight / elemHeight;
 }
 
+/**
+ * Navigate to the next quote
+ */
 function nextQuote() {
   if (activeQuoteIndex < quoteText.length - 1) {
     scrollToQuote(activeQuoteIndex + 1);
   } else {
-    // Scroll back to title when at the end by scrolling to the top
+    // Scroll back to title when at the end
     const scrollContainer = select('#text-container');
     scrollContainer.elt.scrollTo({
       top: 0,
@@ -381,16 +536,21 @@ function nextQuote() {
   }
 }
 
+/**
+ * Navigate to the previous quote
+ */
 function prevQuote() {
   if (activeQuoteIndex > 1) {
     scrollToQuote(activeQuoteIndex - 1);
   } else {
-    // When at the beginning (first paragraph), cycle to the last quote
+    // When at the beginning, cycle to the last quote
     scrollToQuote(quoteText.length - 1);
   }
 }
 
-// Show all quotes with staggered animation
+/**
+ * Show all quotes with staggered animation
+ */
 function showAllQuotes() {
   selectAll('.quote-paragraph').forEach((p, i) => {
     p.style('display', 'block'); 
@@ -403,7 +563,9 @@ function showAllQuotes() {
   });
 }
 
-// Scroll smoothly to a specific quote
+/**
+ * Scroll smoothly to a specific quote
+ */
 function scrollToQuote(index) {
   const targetP = select('.quote-paragraph[data-index="' + index + '"]');
   if (targetP) {
@@ -417,7 +579,7 @@ function scrollToQuote(index) {
       behavior: 'smooth'
     });
     
-    // Simple highlight without scaling effects
+    // Simple highlight effect
     targetP.style('color', '#ffffff');
     setTimeout(() => {
       targetP.style('color', '#FCFCEC');
@@ -425,7 +587,9 @@ function scrollToQuote(index) {
   }
 }
 
-// Add keyboard navigation
+/**
+ * Handle keyboard navigation
+ */
 function keyPressed() {
   if (keyCode === LEFT_ARROW) {
     prevQuote();
@@ -448,24 +612,20 @@ function keyPressed() {
   }
 }
 
-// Add tilt interaction for mobile
+/**
+ * Handle mouse wheel scrolling
+ */
+function mouseWheel(event) {
+  // Let the native scrolling handle this
+  return true;
+}
+
+/**
+ * Add tilt interaction for mobile devices
+ */
 window.addEventListener('deviceorientation', (event) => {
   if (event.gamma) {
     const tilt = constrain(event.gamma, -20, 20);
     targetRotation = map(tilt, -20, 20, -0.05, 0.05);
   }
 });
-
-// Update on window resize
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  
-  // Re-check which background image to use
-  drawBackground();
-}
-
-// Add scroll navigation with smooth animation
-function mouseWheel(event) {
-  // Let the native scrolling handle this
-  return true;
-}
